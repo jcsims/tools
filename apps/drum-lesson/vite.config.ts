@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // For GitHub Pages deployment - replace 'tools' with your repo name if different
-  base: '/tools/',
+  // For GitHub Pages deployment at /tools/drum-lesson/
+  base: '/tools/drum-lesson/',
 })

@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# Tools Collection
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A growing collection of useful web tools, hosted on GitHub Pages.
 
-Currently, two official plugins are available:
+**Live Site:** https://jcsims.github.io/tools/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Available Tools
 
-## React Compiler
+### Drum Lesson Practice
+A kid-friendly web app for learning drums featuring:
+- Interactive drum notation with color-coded instruments
+- Adjustable playback tempo (30-200 BPM)
+- Tooltips showing instrument names on hover
+- Song management with local storage
+- OCR scanning of drum sheet images
+- Camera capture support for mobile devices
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Link:** [/drum-lesson/](https://jcsims.github.io/tools/drum-lesson/)
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+tools/
+├── apps/                    # Individual tool applications
+│   └── drum-lesson/         # Drum lesson practice app
+│       ├── src/             # React source code
+│       ├── package.json     # App dependencies
+│       └── vite.config.ts   # Vite configuration
+├── public/                  # Root static files
+│   └── index.html           # Tools index page
+├── scripts/                 # Build scripts
+│   └── build-all.js         # Builds all apps
+├── .github/workflows/       # GitHub Actions
+│   └── deploy.yml           # Auto-deploy to Pages
+└── package.json             # Root package scripts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Running an app locally
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd apps/drum-lesson
+npm install
+npm run dev
 ```
+
+### Building all apps
+
+```bash
+node scripts/build-all.js
+```
+
+This builds all apps and combines them with the index page into `dist/`.
+
+## Adding a New Tool
+
+1. Create a new directory under `apps/`:
+   ```bash
+   mkdir -p apps/my-new-tool
+   cd apps/my-new-tool
+   npm create vite@latest . -- --template react-ts
+   ```
+
+2. Update `vite.config.ts` with the correct base path:
+   ```ts
+   export default defineConfig({
+     plugins: [react()],
+     base: '/tools/my-new-tool/',
+   })
+   ```
+
+3. Add a card for the new tool in `public/index.html`
+
+4. Push to `main` to auto-deploy
+
+## Deployment
+
+The site automatically deploys to GitHub Pages when pushing to the `main` branch.
+
+To enable GitHub Pages:
+1. Go to repo Settings → Pages
+2. Set Source to "GitHub Actions"

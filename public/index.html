@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools Collection</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .header-icon {
+      font-size: 3.5rem;
+      animation: wiggle 2s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1.2rem;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .tool-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 30px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      display: block;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .tool-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .tool-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .tool-description {
+      color: #aaa;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .tool-tags {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: #888;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .header-icon {
+        font-size: 2.5rem;
+      }
+
+      .tool-card {
+        padding: 24px;
+      }
+
+      .tool-icon {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>
+        <span class="header-icon">🧰</span>
+        Tools Collection
+      </h1>
+      <p class="subtitle">A growing collection of useful web tools</p>
+    </header>
+
+    <main class="tools-grid">
+      <a href="./drum-lesson/" class="tool-card">
+        <span class="tool-icon">🥁</span>
+        <h2 class="tool-name">Drum Lesson Practice</h2>
+        <p class="tool-description">
+          Learn to play drums with interactive notation, adjustable tempo, and the ability to scan sheet music from images.
+        </p>
+        <div class="tool-tags">
+          <span class="tag">Music</span>
+          <span class="tag">Education</span>
+          <span class="tag">Kids</span>
+        </div>
+      </a>
+
+      <!-- Add more tools here as you create them -->
+      <!--
+      <a href="./another-tool/" class="tool-card">
+        <span class="tool-icon">🔧</span>
+        <h2 class="tool-name">Another Tool</h2>
+        <p class="tool-description">
+          Description of your next tool goes here.
+        </p>
+        <div class="tool-tags">
+          <span class="tag">Category</span>
+        </div>
+      </a>
+      -->
+    </main>
+
+    <footer>
+      <p>
+        Made with care •
+        <a href="https://github.com/jcsims/tools" target="_blank" rel="noopener">View on GitHub</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
