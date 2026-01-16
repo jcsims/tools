@@ -5,6 +5,7 @@
   "description": "A collection of useful web tools",
   "scripts": {
     "build": "node scripts/build-all.js",
-    "build:drum-lesson": "cd apps/drum-lesson && npm ci && npm run build"
+    "build:drum-lesson": "cd apps/drum-lesson && npm ci && npm run build",
+    "build:dnd-generator": "cd apps/dnd-generator && npm ci && npm run build"
   }
 }
