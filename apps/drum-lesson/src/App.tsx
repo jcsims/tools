@@ -6,7 +6,6 @@ import { playDrumSound, resumeAudio } from "./audioEngine";
 import { DrumNotation } from "./components/DrumNotation";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { SongManager } from "./components/SongManager";
-import { OcrUpload } from "./components/OcrUpload";
 import { InstrumentSelector } from "./components/InstrumentSelector";
 import { MeasureControls } from "./components/MeasureControls";
 import "./App.css";
@@ -179,18 +178,6 @@ function App() {
     setShowSampleSongs(false);
   };
 
-  const handleOcrDetected = (name: string, measures: Measure[]) => {
-    const newSong: Song = {
-      id: uuidv4(),
-      name,
-      measures,
-      bpm: 80,
-      createdAt: Date.now(),
-    };
-    setSongs((prev) => [...prev, newSong]);
-    setCurrentSong(newSong);
-  };
-
   const handleCreateSong = () => {
     const newSong: Song = {
       id: uuidv4(),
@@ -340,8 +327,7 @@ function App() {
               <span className="welcome-icon">👋</span>
               <h2>Welcome to Drum Practice!</h2>
               <p>
-                Get started by adding a sample song or scanning a drum sheet
-                image.
+                Get started by creating a new song or adding a sample song.
               </p>
             </div>
           </div>
@@ -386,10 +372,6 @@ function App() {
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="panel">
-            <OcrUpload onSongDetected={handleOcrDetected} />
           </div>
         </div>
       </main>

@@ -48,8 +48,6 @@ public/
 
 **Data:** Songs stored in browser localStorage. Structure: `Song { measures: Measure[] }` → `Measure { notes: DrumNote[] }` → `DrumNote { instrument, beat }`.
 
-**OCR:** Tesseract.js for client-side tab notation parsing from images.
-
 ## Adding a New Tool
 
 1. Create `apps/<tool-name>/` with its own `package.json`
