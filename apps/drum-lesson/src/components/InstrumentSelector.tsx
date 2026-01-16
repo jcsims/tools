@@ -18,6 +18,7 @@ const SELECTABLE_INSTRUMENTS: DrumInstrument[] = [
   'snare',
   'floor-tom',
   'kick',
+  'practice-pad',
 ];
 
 export const InstrumentSelector: React.FC<InstrumentSelectorProps> = ({

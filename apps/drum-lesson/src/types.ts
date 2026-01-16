@@ -9,6 +9,7 @@ export type DrumInstrument =
   | 'snare'
   | 'floor-tom'
   | 'kick'
+  | 'practice-pad'
   | 'rest';
 
 export interface DrumNote {
@@ -39,6 +40,7 @@ export const INSTRUMENT_INFO: Record<DrumInstrument, { name: string; symbol: str
   'snare': { name: 'Snare Drum', symbol: '●', color: '#FF6B6B', staffLine: 2.5 },
   'floor-tom': { name: 'Tom 3', symbol: '●', color: '#DDA0DD', staffLine: 3 },
   'kick': { name: 'Bass Drum (Kick)', symbol: '●', color: '#FF69B4', staffLine: 4 },
+  'practice-pad': { name: 'Practice Pad', symbol: '●', color: '#A0A0A0', staffLine: 3.5 },
   'rest': { name: 'Rest', symbol: '𝄽', color: '#888888', staffLine: 2.5 },
 };
 
