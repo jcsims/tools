@@ -5,7 +5,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   min-height: 100vh;
   color: #fff;
@@ -25,7 +25,11 @@ body {
 .app-header {
   text-align: center;
   padding: 30px 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
 }
 
 .app-header h1 {
@@ -50,7 +54,8 @@ body {
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -76,13 +81,40 @@ body {
 .current-song-header {
   text-align: center;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .current-song-title {
   margin: 0;
   font-size: 1.5rem;
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: 600;
+}
+
+.edit-mode-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #2196f3;
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196f3;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-mode-btn:hover {
+  background: rgba(33, 150, 243, 0.2);
+}
+
+.edit-mode-btn.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: #fff;
 }
 
 /* Welcome message */
@@ -96,7 +128,11 @@ body {
 .welcome-message {
   text-align: center;
   padding: 40px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   border-radius: 20px;
   border: 2px dashed #444;
 }
@@ -109,7 +145,8 @@ body {
 }
 
 @keyframes wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg);
   }
   25% {
@@ -239,7 +276,7 @@ body {
 }
 
 .footer-tip {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: 500;
 }
 

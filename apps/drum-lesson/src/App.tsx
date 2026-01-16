@@ -1,15 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import type { Song, Measure } from './types';
-import { SAMPLE_SONGS } from './types';
-import { playDrumSound, resumeAudio } from './audioEngine';
-import { DrumNotation } from './components/DrumNotation';
-import { PlaybackControls } from './components/PlaybackControls';
-import { SongManager } from './components/SongManager';
-import { OcrUpload } from './components/OcrUpload';
-import './App.css';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
+import type { Song, Measure, DrumInstrument } from "./types";
+import { SAMPLE_SONGS } from "./types";
+import { playDrumSound, resumeAudio } from "./audioEngine";
+import { DrumNotation } from "./components/DrumNotation";
+import { PlaybackControls } from "./components/PlaybackControls";
+import { SongManager } from "./components/SongManager";
+import { OcrUpload } from "./components/OcrUpload";
+import { InstrumentSelector } from "./components/InstrumentSelector";
+import { MeasureControls } from "./components/MeasureControls";
+import "./App.css";
 
-const STORAGE_KEY = 'drum-lesson-songs';
+const STORAGE_KEY = "drum-lesson-songs";
 
 function App() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -18,6 +20,9 @@ function App() {
   const [currentBeat, setCurrentBeat] = useState<number | null>(null);
   const [currentMeasure, setCurrentMeasure] = useState<number | null>(null);
   const [showSampleSongs, setShowSampleSongs] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedInstrument, setSelectedInstrument] =
+    useState<DrumInstrument>("kick");
 
   const playbackRef = useRef<number | null>(null);
   const lastBeatTimeRef = useRef<number>(0);
@@ -33,7 +38,7 @@ function App() {
           setCurrentSong(parsed[0]);
         }
       } catch (e) {
-        console.error('Failed to parse saved songs:', e);
+        console.error("Failed to parse saved songs:", e);
       }
     }
   }, []);
@@ -50,22 +55,19 @@ function App() {
       const updatedSong = { ...currentSong, bpm: newBpm };
       setCurrentSong(updatedSong);
       setSongs((prev) =>
-        prev.map((s) => (s.id === currentSong.id ? updatedSong : s))
+        prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
       );
     }
   };
 
-  const playNotesAtBeat = useCallback(
-    (measure: Measure, beat: number) => {
-      const notesToPlay = measure.notes.filter(
-        (note) => Math.abs(note.beat - beat) < 0.01
-      );
-      notesToPlay.forEach((note) => {
-        playDrumSound(note.instrument);
-      });
-    },
-    []
-  );
+  const playNotesAtBeat = useCallback((measure: Measure, beat: number) => {
+    const notesToPlay = measure.notes.filter(
+      (note) => Math.abs(note.beat - beat) < 0.01,
+    );
+    notesToPlay.forEach((note) => {
+      playDrumSound(note.instrument);
+    });
+  }, []);
 
   const stopPlayback = useCallback(() => {
     if (playbackRef.current) {
@@ -159,14 +161,14 @@ function App() {
 
   const handleRenameSong = (id: string, newName: string) => {
     setSongs((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, name: newName } : s))
+      prev.map((s) => (s.id === id ? { ...s, name: newName } : s)),
     );
     if (currentSong?.id === id) {
       setCurrentSong((prev) => (prev ? { ...prev, name: newName } : null));
     }
   };
 
-  const handleAddSampleSong = (sample: typeof SAMPLE_SONGS[0]) => {
+  const handleAddSampleSong = (sample: (typeof SAMPLE_SONGS)[0]) => {
     const newSong: Song = {
       ...sample,
       id: uuidv4(),
@@ -189,6 +191,92 @@ function App() {
     setCurrentSong(newSong);
   };
 
+  const handleCreateSong = () => {
+    const newSong: Song = {
+      id: uuidv4(),
+      name: "New Song",
+      measures: [
+        {
+          notes: [],
+          timeSignature: [4, 4],
+        },
+      ],
+      bpm: 80,
+      createdAt: Date.now(),
+    };
+    setSongs((prev) => [...prev, newSong]);
+    setCurrentSong(newSong);
+    setIsEditMode(true);
+  };
+
+  const handleNoteToggle = (
+    measureIndex: number,
+    beat: number,
+    instrument: DrumInstrument,
+  ) => {
+    if (!currentSong) return;
+
+    const updatedMeasures = [...currentSong.measures];
+    const measure = { ...updatedMeasures[measureIndex] };
+    const existingNoteIndex = measure.notes.findIndex(
+      (n) => Math.abs(n.beat - beat) < 0.01 && n.instrument === instrument,
+    );
+
+    if (existingNoteIndex >= 0) {
+      // Remove existing note
+      measure.notes = measure.notes.filter((_, i) => i !== existingNoteIndex);
+    } else {
+      // Add new note
+      measure.notes = [...measure.notes, { instrument, beat }];
+    }
+
+    updatedMeasures[measureIndex] = measure;
+    const updatedSong = { ...currentSong, measures: updatedMeasures };
+    setCurrentSong(updatedSong);
+    setSongs((prev) =>
+      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
+    );
+  };
+
+  const handleAddMeasure = () => {
+    if (!currentSong) return;
+
+    const lastMeasure = currentSong.measures[currentSong.measures.length - 1];
+    const newMeasure: Measure = {
+      notes: [],
+      timeSignature: lastMeasure?.timeSignature || [4, 4],
+    };
+
+    const updatedSong = {
+      ...currentSong,
+      measures: [...currentSong.measures, newMeasure],
+    };
+    setCurrentSong(updatedSong);
+    setSongs((prev) =>
+      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
+    );
+  };
+
+  const handleRemoveMeasure = () => {
+    if (!currentSong || currentSong.measures.length <= 1) return;
+
+    const updatedSong = {
+      ...currentSong,
+      measures: currentSong.measures.slice(0, -1),
+    };
+    setCurrentSong(updatedSong);
+    setSongs((prev) =>
+      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
+    );
+  };
+
+  const toggleEditMode = () => {
+    if (isPlaying) {
+      stopPlayback();
+    }
+    setIsEditMode(!isEditMode);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -204,23 +292,46 @@ function App() {
           <>
             <div className="current-song-header">
               <h2 className="current-song-title">
-                Now Playing: {currentSong.name}
+                {isEditMode ? "Editing" : "Now Playing"}: {currentSong.name}
               </h2>
+              <button
+                className={`edit-mode-btn ${isEditMode ? "active" : ""}`}
+                onClick={toggleEditMode}
+              >
+                {isEditMode ? "✓ Done Editing" : "✏️ Edit Song"}
+              </button>
             </div>
 
-            <PlaybackControls
-              bpm={currentSong.bpm}
-              onBpmChange={handleBpmChange}
-              isPlaying={isPlaying}
-              onPlayPause={handlePlayPause}
-              onStop={stopPlayback}
-              onRestart={handleRestart}
-            />
+            {isEditMode ? (
+              <>
+                <InstrumentSelector
+                  selectedInstrument={selectedInstrument}
+                  onSelectInstrument={setSelectedInstrument}
+                />
+                <MeasureControls
+                  measureCount={currentSong.measures.length}
+                  onAddMeasure={handleAddMeasure}
+                  onRemoveMeasure={handleRemoveMeasure}
+                />
+              </>
+            ) : (
+              <PlaybackControls
+                bpm={currentSong.bpm}
+                onBpmChange={handleBpmChange}
+                isPlaying={isPlaying}
+                onPlayPause={handlePlayPause}
+                onStop={stopPlayback}
+                onRestart={handleRestart}
+              />
+            )}
 
             <DrumNotation
               measures={currentSong.measures}
               currentBeat={currentBeat}
               currentMeasure={currentMeasure}
+              isEditMode={isEditMode}
+              selectedInstrument={selectedInstrument}
+              onNoteToggle={handleNoteToggle}
             />
           </>
         ) : (
@@ -244,6 +355,7 @@ function App() {
               onSelectSong={handleSelectSong}
               onDeleteSong={handleDeleteSong}
               onRenameSong={handleRenameSong}
+              onCreateSong={handleCreateSong}
             />
 
             <div className="sample-songs-section">
@@ -252,7 +364,7 @@ function App() {
                 onClick={() => setShowSampleSongs(!showSampleSongs)}
               >
                 <span className="btn-icon">🎵</span>
-                {showSampleSongs ? 'Hide Sample Songs' : 'Add Sample Song'}
+                {showSampleSongs ? "Hide Sample Songs" : "Add Sample Song"}
               </button>
 
               {showSampleSongs && (
@@ -266,7 +378,7 @@ function App() {
                       <span className="sample-name">{sample.name}</span>
                       <span className="sample-info">
                         {sample.measures.length} measure
-                        {sample.measures.length !== 1 ? 's' : ''} • {sample.bpm}{' '}
+                        {sample.measures.length !== 1 ? "s" : ""} • {sample.bpm}{" "}
                         BPM
                       </span>
                     </button>

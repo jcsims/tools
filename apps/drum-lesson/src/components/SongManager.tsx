@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import type { Song } from '../types';
-import './SongManager.css';
+import React, { useState } from "react";
+import type { Song } from "../types";
+import "./SongManager.css";
 
 interface SongManagerProps {
   songs: Song[];
@@ -8,6 +8,7 @@ interface SongManagerProps {
   onSelectSong: (song: Song) => void;
   onDeleteSong: (id: string) => void;
   onRenameSong: (id: string, newName: string) => void;
+  onCreateSong: () => void;
 }
 
 export const SongManager: React.FC<SongManagerProps> = ({
@@ -16,9 +17,10 @@ export const SongManager: React.FC<SongManagerProps> = ({
   onSelectSong,
   onDeleteSong,
   onRenameSong,
+  onCreateSong,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
+  const [editName, setEditName] = useState("");
 
   const handleStartEdit = (song: Song) => {
     setEditingId(song.id);
@@ -29,19 +31,19 @@ export const SongManager: React.FC<SongManagerProps> = ({
     if (editingId && editName.trim()) {
       onRenameSong(editingId, editName.trim());
       setEditingId(null);
-      setEditName('');
+      setEditName("");
     }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setEditName('');
+    setEditName("");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSaveEdit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleCancelEdit();
     }
   };
@@ -49,10 +51,10 @@ export const SongManager: React.FC<SongManagerProps> = ({
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -63,11 +65,17 @@ export const SongManager: React.FC<SongManagerProps> = ({
         My Songs
       </h3>
 
+      <button className="create-song-btn" onClick={onCreateSong}>
+        <span className="btn-icon">➕</span>
+        Create New Song
+      </button>
+
       {songs.length === 0 ? (
         <div className="no-songs">
           <p>No songs yet!</p>
           <p className="no-songs-hint">
-            Try uploading a drum sheet image or select a sample song to get started.
+            Try uploading a drum sheet image or select a sample song to get
+            started.
           </p>
         </div>
       ) : (
@@ -75,7 +83,7 @@ export const SongManager: React.FC<SongManagerProps> = ({
           {songs.map((song) => (
             <div
               key={song.id}
-              className={`song-item ${currentSongId === song.id ? 'active' : ''}`}
+              className={`song-item ${currentSongId === song.id ? "active" : ""}`}
             >
               {editingId === song.id ? (
                 <div className="song-edit">
@@ -90,22 +98,24 @@ export const SongManager: React.FC<SongManagerProps> = ({
                   <button className="edit-btn save" onClick={handleSaveEdit}>
                     ✓
                   </button>
-                  <button className="edit-btn cancel" onClick={handleCancelEdit}>
+                  <button
+                    className="edit-btn cancel"
+                    onClick={handleCancelEdit}
+                  >
                     ✕
                   </button>
                 </div>
               ) : (
                 <>
-                  <div
-                    className="song-info"
-                    onClick={() => onSelectSong(song)}
-                  >
+                  <div className="song-info" onClick={() => onSelectSong(song)}>
                     <span className="song-name">{song.name}</span>
                     <span className="song-meta">
-                      {song.measures.length} measure{song.measures.length !== 1 ? 's' : ''} •{' '}
-                      {song.bpm} BPM
+                      {song.measures.length} measure
+                      {song.measures.length !== 1 ? "s" : ""} • {song.bpm} BPM
                     </span>
-                    <span className="song-date">{formatDate(song.createdAt)}</span>
+                    <span className="song-date">
+                      {formatDate(song.createdAt)}
+                    </span>
                   </div>
                   <div className="song-actions">
                     <button

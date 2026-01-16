@@ -90,6 +90,14 @@
   animation: pulse 0.15s ease-out;
 }
 
+.drum-note.editable:hover {
+  opacity: 0.7;
+}
+
+.drum-note.editable:hover .note-symbol {
+  filter: brightness(1.2) drop-shadow(0 0 8px #ff6b6b);
+}
+
 @keyframes pulse {
   0% {
     transform: scale(1);

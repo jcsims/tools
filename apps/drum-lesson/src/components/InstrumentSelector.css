@@ -1,0 +1,78 @@
+.instrument-selector {
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.selector-title {
+  margin: 0 0 12px 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.instrument-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.instrument-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.instrument-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.instrument-btn.selected {
+  background: rgba(var(--instrument-color), 0.2);
+  border-color: var(--instrument-color);
+  color: #fff;
+}
+
+.instrument-btn.selected .instrument-symbol {
+  transform: scale(1.1);
+}
+
+.instrument-symbol {
+  font-size: 20px;
+  color: var(--instrument-color);
+  transition: transform 0.2s ease;
+}
+
+.instrument-name {
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .instrument-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .instrument-btn {
+    padding: 8px 6px;
+  }
+
+  .instrument-symbol {
+    font-size: 18px;
+  }
+
+  .instrument-name {
+    font-size: 10px;
+  }
+}

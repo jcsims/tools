@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import type { Measure, DrumNote, DrumInstrument } from '../types';
-import { INSTRUMENT_INFO } from '../types';
-import './DrumNotation.css';
+import React, { useState } from "react";
+import type { Measure, DrumNote, DrumInstrument } from "../types";
+import { INSTRUMENT_INFO } from "../types";
+import "./DrumNotation.css";
 
 interface DrumNotationProps {
   measures: Measure[];
   currentBeat: number | null;
   currentMeasure: number | null;
+  isEditMode?: boolean;
+  selectedInstrument?: DrumInstrument;
+  onNoteToggle?: (
+    measureIndex: number,
+    beat: number,
+    instrument: DrumInstrument,
+  ) => void;
 }
 
 interface TooltipState {
@@ -25,6 +32,9 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
   measures,
   currentBeat,
   currentMeasure,
+  isEditMode = false,
+  selectedInstrument = "kick",
+  onNoteToggle,
 }) => {
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
@@ -33,10 +43,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     instrument: null,
   });
 
-  const handleNoteHover = (
-    e: React.MouseEvent,
-    instrument: DrumInstrument
-  ) => {
+  const handleNoteHover = (e: React.MouseEvent, instrument: DrumInstrument) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({
       visible: true,
@@ -50,11 +57,25 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     setTooltip({ ...tooltip, visible: false });
   };
 
+  const handleNoteClick = (
+    e: React.MouseEvent,
+    measureIndex: number,
+    note: DrumNote,
+  ) => {
+    if (!isEditMode || !onNoteToggle) return;
+    e.stopPropagation();
+    onNoteToggle(measureIndex, note.beat, note.instrument);
+  };
+
   const getYPosition = (staffLine: number): number => {
     return 30 + staffLine * LINE_SPACING;
   };
 
-  const getXPosition = (beat: number, measureIndex: number, beatsPerMeasure: number): number => {
+  const getXPosition = (
+    beat: number,
+    measureIndex: number,
+    beatsPerMeasure: number,
+  ): number => {
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
     const measureStart = measureIndex * (measureWidth + 40) + 60; // 40px gap between measures
     return measureStart + beat * BEAT_WIDTH + BEAT_WIDTH / 2;
@@ -64,7 +85,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     note: DrumNote,
     measureIndex: number,
     beatsPerMeasure: number,
-    noteIndex: number
+    noteIndex: number,
   ) => {
     const info = INSTRUMENT_INFO[note.instrument];
     const x = getXPosition(note.beat, measureIndex, beatsPerMeasure);
@@ -75,15 +96,18 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
       currentBeat !== null &&
       Math.abs(note.beat - currentBeat) < 0.1;
 
-    const isCymbal = ['crash', 'ride', 'hihat', 'hihat-open'].includes(note.instrument);
+    const isCymbal = ["crash", "ride", "hihat", "hihat-open"].includes(
+      note.instrument,
+    );
 
     return (
       <g
         key={`${measureIndex}-${noteIndex}-${note.beat}-${note.instrument}`}
-        className={`drum-note ${isActive ? 'active' : ''}`}
+        className={`drum-note ${isActive ? "active" : ""} ${isEditMode ? "editable" : ""}`}
         onMouseEnter={(e) => handleNoteHover(e, note.instrument)}
         onMouseLeave={handleNoteLeave}
-        style={{ cursor: 'pointer' }}
+        onClick={(e) => handleNoteClick(e, measureIndex, note)}
+        style={{ cursor: isEditMode ? "pointer" : "default" }}
       >
         {isCymbal ? (
           // X symbol for cymbals
@@ -106,7 +130,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
               strokeWidth={isActive ? 4 : 3}
               className="note-symbol"
             />
-            {note.instrument === 'hihat-open' && (
+            {note.instrument === "hihat-open" && (
               <circle
                 cx={x}
                 cy={y}
@@ -124,7 +148,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
             cy={y}
             r={NOTE_RADIUS}
             fill={info.color}
-            stroke={isActive ? '#fff' : info.color}
+            stroke={isActive ? "#fff" : info.color}
             strokeWidth={isActive ? 3 : 1}
             className="note-symbol"
           />
@@ -139,12 +163,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
           strokeWidth={2}
         />
         {/* Invisible larger hit area for touch/hover */}
-        <circle
-          cx={x}
-          cy={y}
-          r={NOTE_RADIUS + 8}
-          fill="transparent"
-        />
+        <circle cx={x} cy={y} r={NOTE_RADIUS + 8} fill="transparent" />
       </g>
     );
   };
@@ -156,11 +175,44 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
 
     return (
       <g key={measureIndex}>
+        {/* Clickable area for adding notes in edit mode */}
+        {isEditMode && (
+          <rect
+            x={measureStart}
+            y={20}
+            width={measureWidth}
+            height={STAFF_LINES * LINE_SPACING + 10}
+            fill="rgba(33, 150, 243, 0.1)"
+            stroke="rgba(33, 150, 243, 0.3)"
+            strokeWidth={1}
+            strokeDasharray="4 2"
+            rx={4}
+            style={{ cursor: "crosshair" }}
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickX = e.clientX - rect.left;
+              const beatPosition = (clickX - BEAT_WIDTH / 2) / BEAT_WIDTH;
+              const snappedBeat = Math.round(beatPosition * 2) / 2;
+              if (
+                snappedBeat >= 0 &&
+                snappedBeat < beatsPerMeasure &&
+                onNoteToggle
+              ) {
+                onNoteToggle(measureIndex, snappedBeat, selectedInstrument);
+              }
+            }}
+          />
+        )}
+
         {/* Time signature */}
         {measureIndex === 0 && (
           <text x={20} y={70} className="time-signature">
-            <tspan x={20} dy={0}>{measure.timeSignature[0]}</tspan>
-            <tspan x={20} dy={25}>{measure.timeSignature[1]}</tspan>
+            <tspan x={20} dy={0}>
+              {measure.timeSignature[0]}
+            </tspan>
+            <tspan x={20} dy={25}>
+              {measure.timeSignature[1]}
+            </tspan>
           </text>
         )}
 
@@ -185,8 +237,14 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
               y1={25}
               x2={measureStart + beatIndex * BEAT_WIDTH}
               y2={30 + (STAFF_LINES - 1) * LINE_SPACING + 5}
-              stroke={beatIndex === 0 || beatIndex === beatsPerMeasure ? '#666' : '#444'}
-              strokeWidth={beatIndex === 0 || beatIndex === beatsPerMeasure ? 2 : 1}
+              stroke={
+                beatIndex === 0 || beatIndex === beatsPerMeasure
+                  ? "#666"
+                  : "#444"
+              }
+              strokeWidth={
+                beatIndex === 0 || beatIndex === beatsPerMeasure ? 2 : 1
+              }
             />
             {beatIndex < beatsPerMeasure && (
               <text
@@ -211,7 +269,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
 
         {/* Notes */}
         {measure.notes.map((note, noteIndex) =>
-          renderNote(note, measureIndex, beatsPerMeasure, noteIndex)
+          renderNote(note, measureIndex, beatsPerMeasure, noteIndex),
         )}
 
         {/* Playhead */}
@@ -240,14 +298,16 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
       <div className="notation-legend">
         <h4>Drum Legend:</h4>
         <div className="legend-items">
-          {Object.entries(INSTRUMENT_INFO).filter(([key]) => key !== 'rest').map(([key, info]) => (
-            <div key={key} className="legend-item">
-              <span className="legend-symbol" style={{ color: info.color }}>
-                {info.symbol}
-              </span>
-              <span className="legend-name">{info.name}</span>
-            </div>
-          ))}
+          {Object.entries(INSTRUMENT_INFO)
+            .filter(([key]) => key !== "rest")
+            .map(([key, info]) => (
+              <div key={key} className="legend-item">
+                <span className="legend-symbol" style={{ color: info.color }}>
+                  {info.symbol}
+                </span>
+                <span className="legend-name">{info.name}</span>
+              </div>
+            ))}
         </div>
       </div>
 
