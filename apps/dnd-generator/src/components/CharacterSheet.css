@@ -1,0 +1,619 @@
+.character-sheet-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  justify-content: flex-end;
+}
+
+.sheet-actions button {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.sheet-actions button:hover {
+  border-color: var(--gold);
+}
+
+.sheet-actions .btn-primary {
+  background: var(--gold);
+  color: var(--bg-primary);
+  border-color: var(--gold);
+}
+
+.character-sheet {
+  background: #f5f0e1;
+  color: #2c2c2c;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Georgia', serif;
+}
+
+/* Header */
+.sheet-header {
+  background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
+  color: white;
+  padding: 1.5rem;
+  border-bottom: 4px solid #d4af37;
+}
+
+.character-name-box {
+  margin-bottom: 1rem;
+}
+
+.character-name {
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: 'Cinzel', 'Georgia', serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.character-name-box label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.character-info-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.info-box {
+  flex: 1;
+  min-width: 120px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.info-box label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+/* Body Layout */
+.sheet-body {
+  display: grid;
+  grid-template-columns: 200px 1fr 280px;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.sheet-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Left Column - Abilities */
+.ability-scores-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ability-block {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.ability-name {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #4a0000;
+  letter-spacing: 1px;
+}
+
+.ability-modifier {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+.ability-score {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  line-height: 24px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Stats Section */
+.stats-section {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.checkbox {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #4a0000;
+  border-radius: 3px;
+}
+
+.checkbox.filled {
+  background: #4a0000;
+}
+
+.stat-circle {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #4a0000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.saving-throws,
+.skills-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #ccc;
+}
+
+.saving-throws h4,
+.skills-section h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #4a0000;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.save-row,
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0;
+}
+
+.save-mod,
+.skill-mod {
+  min-width: 24px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.save-name,
+.skill-name {
+  flex: 1;
+}
+
+.skill-ability {
+  font-size: 0.65rem;
+  color: #666;
+}
+
+.passive-perception {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.pp-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.passive-perception label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #666;
+}
+
+/* Center Column - Combat */
+.combat-stats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.combat-stat-box {
+  flex: 1;
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.combat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.combat-stat-box label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #666;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.hp-section {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hp-max {
+  background: #4a0000;
+  color: white;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.hp-max label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.hp-current,
+.hp-temp {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.hp-box {
+  height: 40px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.hp-current label,
+.hp-temp label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.hit-dice-section {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.hit-dice,
+.death-saves {
+  flex: 1;
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.hit-dice label {
+  display: block;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.hit-dice span {
+  font-weight: bold;
+}
+
+.dice-box {
+  height: 30px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  margin: 0.25rem 0;
+}
+
+.death-saves label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #666;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.save-bubbles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.save-bubbles span {
+  font-size: 0.6rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+.bubbles {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.bubble {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #4a0000;
+  border-radius: 50%;
+}
+
+.attacks-section,
+.equipment-section {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.75rem;
+  flex: 1;
+}
+
+.attacks-section h4,
+.equipment-section h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #4a0000;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.attacks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.attacks-table th {
+  background: #f0e6d3;
+  padding: 0.25rem;
+  text-align: left;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.attacks-table td {
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.equipment-list {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.equipment-item {
+  padding: 0.25rem 0;
+  border-bottom: 1px dotted #ccc;
+}
+
+.equipment-empty {
+  color: #999;
+  font-style: italic;
+}
+
+/* Right Column - Personality */
+.personality-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.personality-box {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.personality-box h4 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #4a0000;
+  margin-bottom: 0.5rem;
+}
+
+.personality-box p {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #444;
+}
+
+.features-section {
+  background: white;
+  border: 2px solid #4a0000;
+  border-radius: 8px;
+  padding: 0.75rem;
+  flex: 1;
+}
+
+.features-section h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #4a0000;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.features-list {
+  font-size: 0.8rem;
+}
+
+.feature-item {
+  padding: 0.25rem 0;
+  border-bottom: 1px dotted #ccc;
+}
+
+/* Footer */
+.sheet-footer {
+  background: #e8e0d0;
+  padding: 1.5rem;
+  border-top: 2px solid #4a0000;
+}
+
+.appearance-section h4,
+.backstory-section h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #4a0000;
+  margin-bottom: 0.75rem;
+}
+
+.appearance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.appearance-item {
+  font-size: 0.85rem;
+}
+
+.appearance-item .label {
+  font-weight: bold;
+  color: #666;
+}
+
+.backstory-section {
+  margin-top: 1rem;
+}
+
+.backstory-section p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Print Styles */
+@media print {
+  .character-sheet-container {
+    max-width: none;
+  }
+
+  .character-sheet {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .sheet-header {
+    background: #8b0000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sheet-body {
+    grid-template-columns: 180px 1fr 240px;
+  }
+
+  .ability-block,
+  .stats-section,
+  .combat-stat-box,
+  .hp-section,
+  .hit-dice,
+  .death-saves,
+  .attacks-section,
+  .equipment-section,
+  .personality-box,
+  .features-section,
+  .passive-perception {
+    border-color: black;
+  }
+
+  .checkbox.filled {
+    background: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+@media (max-width: 900px) {
+  .sheet-body {
+    grid-template-columns: 1fr;
+  }
+
+  .sheet-column.left {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .ability-scores-column {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ability-block {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sheet-header {
+    padding: 1rem;
+  }
+
+  .character-name {
+    font-size: 1.5rem;
+  }
+
+  .sheet-body {
+    padding: 1rem;
+  }
+
+  .combat-stats {
+    flex-direction: column;
+  }
+
+  .hit-dice-section {
+    flex-direction: column;
+  }
+}
