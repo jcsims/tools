@@ -11,6 +11,7 @@ const INSTRUMENT_TO_TAB: Record<DrumInstrument, string> = {
   snare: "SD",
   "floor-tom": "T3",
   kick: "BD",
+  "practice-pad": "PP",
   rest: "", // Not rendered
 };
 
@@ -27,6 +28,7 @@ const TAB_TO_INSTRUMENT: Record<string, DrumInstrument> = {
   FT: "floor-tom", // Alternative label
   BD: "kick",
   KD: "kick", // Alternative label
+  PP: "practice-pad",
 };
 
 // Order of instruments in tab output (top to bottom)
@@ -39,6 +41,7 @@ const TAB_ORDER: DrumInstrument[] = [
   "snare",
   "floor-tom",
   "kick",
+  "practice-pad",
 ];
 
 /**

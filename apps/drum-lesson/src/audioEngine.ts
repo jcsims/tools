@@ -44,6 +44,9 @@ export function playDrumSound(instrument: DrumInstrument): void {
     case 'floor-tom':
       playTom(ctx, now, 100);
       break;
+    case 'practice-pad':
+      playPracticePad(ctx, now);
+      break;
   }
 }
 
@@ -200,6 +203,25 @@ function playTom(ctx: AudioContext, time: number, freq: number): void {
 
   osc.start(time);
   osc.stop(time + 0.3);
+}
+
+function playPracticePad(ctx: AudioContext, time: number): void {
+  // Short, dry "tick" sound simulating stick on rubber pad
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(400, time);
+  osc.frequency.exponentialRampToValueAtTime(200, time + 0.02);
+
+  gain.gain.setValueAtTime(0.3, time);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(time);
+  osc.stop(time + 0.05);
 }
 
 // Resume audio context if suspended (needed for browser autoplay policies)
