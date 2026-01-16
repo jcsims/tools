@@ -34,10 +34,10 @@ export const INSTRUMENT_INFO: Record<DrumInstrument, { name: string; symbol: str
   'ride': { name: 'Ride Cymbal', symbol: '✕', color: '#FFA500', staffLine: 0.5 },
   'hihat': { name: 'Hi-Hat (Closed)', symbol: '✕', color: '#90EE90', staffLine: 1 },
   'hihat-open': { name: 'Hi-Hat (Open)', symbol: '○', color: '#98FB98', staffLine: 1 },
-  'high-tom': { name: 'High Tom', symbol: '●', color: '#87CEEB', staffLine: 1.5 },
-  'mid-tom': { name: 'Mid Tom', symbol: '●', color: '#6495ED', staffLine: 2 },
+  'high-tom': { name: 'Tom 1', symbol: '●', color: '#87CEEB', staffLine: 1.5 },
+  'mid-tom': { name: 'Tom 2', symbol: '●', color: '#6495ED', staffLine: 2 },
   'snare': { name: 'Snare Drum', symbol: '●', color: '#FF6B6B', staffLine: 2.5 },
-  'floor-tom': { name: 'Floor Tom', symbol: '●', color: '#DDA0DD', staffLine: 3 },
+  'floor-tom': { name: 'Tom 3', symbol: '●', color: '#DDA0DD', staffLine: 3 },
   'kick': { name: 'Bass Drum (Kick)', symbol: '●', color: '#FF69B4', staffLine: 4 },
   'rest': { name: 'Rest', symbol: '𝄽', color: '#888888', staffLine: 2.5 },
 };
