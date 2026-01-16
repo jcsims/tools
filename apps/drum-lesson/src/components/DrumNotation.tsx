@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { Measure, DrumNote, DrumInstrument } from "../types";
 import { INSTRUMENT_INFO } from "../types";
 import "./DrumNotation.css";
@@ -42,6 +42,35 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     y: 0,
     instrument: null,
   });
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to keep playhead visible during playback
+  useEffect(() => {
+    if (currentMeasure === null || currentBeat === null) return;
+    if (!scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const beatsPerMeasure = measures[currentMeasure]?.timeSignature[0] ?? 4;
+    const measureWidth = beatsPerMeasure * BEAT_WIDTH;
+    const measureStart = currentMeasure * (measureWidth + 40) + 60;
+    const playheadX = measureStart + currentBeat * BEAT_WIDTH + BEAT_WIDTH / 2;
+
+    const containerWidth = container.clientWidth;
+    const scrollLeft = container.scrollLeft;
+    const scrollRight = scrollLeft + containerWidth;
+
+    // Add some padding so we scroll before the playhead hits the edge
+    const padding = 100;
+
+    // If playhead is outside the visible area (with padding), scroll to center it
+    if (playheadX < scrollLeft + padding || playheadX > scrollRight - padding) {
+      container.scrollTo({
+        left: playheadX - containerWidth / 2,
+        behavior: "smooth",
+      });
+    }
+  }, [currentMeasure, currentBeat, measures]);
 
   const handleNoteHover = (e: React.MouseEvent, instrument: DrumInstrument) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -311,7 +340,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
         </div>
       </div>
 
-      <div className="notation-scroll">
+      <div className="notation-scroll" ref={scrollContainerRef}>
         <svg
           width={Math.max(totalWidth, 400)}
           height={180}
