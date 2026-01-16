@@ -8,6 +8,7 @@ import { PlaybackControls } from "./components/PlaybackControls";
 import { SongManager } from "./components/SongManager";
 import { InstrumentSelector } from "./components/InstrumentSelector";
 import { MeasureControls } from "./components/MeasureControls";
+import { TabImportExport } from "./components/TabImportExport";
 import "./App.css";
 
 const STORAGE_KEY = "drum-lesson-songs";
@@ -196,6 +197,18 @@ function App() {
     setIsEditMode(true);
   };
 
+  const handleTabImport = (name: string, measures: Measure[], bpm: number) => {
+    const newSong: Song = {
+      id: uuidv4(),
+      name,
+      measures,
+      bpm,
+      createdAt: Date.now(),
+    };
+    setSongs((prev) => [...prev, newSong]);
+    setCurrentSong(newSong);
+  };
+
   const handleNoteToggle = (
     measureIndex: number,
     beat: number,
@@ -372,6 +385,11 @@ function App() {
                 </div>
               )}
             </div>
+
+            <TabImportExport
+              currentSong={currentSong}
+              onImport={handleTabImport}
+            />
           </div>
         </div>
       </main>
