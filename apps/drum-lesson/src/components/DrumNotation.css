@@ -79,8 +79,8 @@
 
 .drum-note {
   transition: transform 0.1s ease;
-  transform-box: fill-box;
-  transform-origin: center;
+  /* Note elements are drawn relative to (0, 0), so scale from local origin */
+  transform-origin: 0 0;
 }
 
 .drum-note:hover .note-symbol {
