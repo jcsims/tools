@@ -129,10 +129,13 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
       note.instrument,
     );
 
+    // Position the group using transform, draw elements relative to (0, 0)
+    // This ensures scale animation works correctly from the note's center
     return (
       <g
         key={`${measureIndex}-${noteIndex}-${note.beat}-${note.instrument}`}
         className={`drum-note ${isActive ? "active" : ""} ${isEditMode ? "editable" : ""}`}
+        transform={`translate(${x}, ${y})`}
         onMouseEnter={(e) => handleNoteHover(e, note.instrument)}
         onMouseLeave={handleNoteLeave}
         onClick={(e) => handleNoteClick(e, measureIndex, note)}
@@ -142,27 +145,27 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
           // X symbol for cymbals
           <>
             <line
-              x1={x - NOTE_RADIUS}
-              y1={y - NOTE_RADIUS}
-              x2={x + NOTE_RADIUS}
-              y2={y + NOTE_RADIUS}
+              x1={-NOTE_RADIUS}
+              y1={-NOTE_RADIUS}
+              x2={NOTE_RADIUS}
+              y2={NOTE_RADIUS}
               stroke={info.color}
               strokeWidth={isActive ? 4 : 3}
               className="note-symbol"
             />
             <line
-              x1={x + NOTE_RADIUS}
-              y1={y - NOTE_RADIUS}
-              x2={x - NOTE_RADIUS}
-              y2={y + NOTE_RADIUS}
+              x1={NOTE_RADIUS}
+              y1={-NOTE_RADIUS}
+              x2={-NOTE_RADIUS}
+              y2={NOTE_RADIUS}
               stroke={info.color}
               strokeWidth={isActive ? 4 : 3}
               className="note-symbol"
             />
             {note.instrument === "hihat-open" && (
               <circle
-                cx={x}
-                cy={y}
+                cx={0}
+                cy={0}
                 r={NOTE_RADIUS + 4}
                 fill="none"
                 stroke={info.color}
@@ -173,8 +176,8 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
         ) : (
           // Filled circle for drums
           <circle
-            cx={x}
-            cy={y}
+            cx={0}
+            cy={0}
             r={NOTE_RADIUS}
             fill={info.color}
             stroke={isActive ? "#fff" : info.color}
@@ -184,15 +187,15 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
         )}
         {/* Note stem */}
         <line
-          x1={x}
-          y1={y}
-          x2={x}
-          y2={y - 35}
+          x1={0}
+          y1={0}
+          x2={0}
+          y2={-35}
           stroke={info.color}
           strokeWidth={2}
         />
         {/* Invisible larger hit area for touch/hover */}
-        <circle cx={x} cy={y} r={NOTE_RADIUS + 8} fill="transparent" />
+        <circle cx={0} cy={0} r={NOTE_RADIUS + 8} fill="transparent" />
       </g>
     );
   };
