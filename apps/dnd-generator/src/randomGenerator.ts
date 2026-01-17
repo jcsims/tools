@@ -57,7 +57,7 @@ export function generateName(race: Race): string {
 
 // Generate random character
 export function generateRandomCharacter(): Character {
-  const races: Race[] = ['human', 'elf', 'dwarf', 'halfling', 'gnome', 'half-elf', 'half-orc', 'tiefling', 'dragonborn'];
+  const races: Race[] = ['human', 'elf', 'dwarf', 'halfling', 'gnome', 'half-elf', 'half-orc', 'orc', 'tiefling', 'dragonborn'];
   const classes: CharacterClass[] = ['barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'ranger', 'rogue', 'sorcerer', 'warlock', 'wizard'];
   const backgrounds: Background[] = ['acolyte', 'charlatan', 'criminal', 'entertainer', 'folk-hero', 'guild-artisan', 'hermit', 'noble', 'outlander', 'sage', 'sailor', 'soldier', 'urchin'];
   const alignments: Alignment[] = ['lawful-good', 'neutral-good', 'chaotic-good', 'lawful-neutral', 'true-neutral', 'chaotic-neutral', 'lawful-evil', 'neutral-evil', 'chaotic-evil'];
@@ -151,6 +151,7 @@ function generateRandomAge(race: Race): string {
     gnome: [40, 400],
     'half-elf': [20, 180],
     'half-orc': [14, 60],
+    orc: [12, 50],
     tiefling: [18, 100],
     dragonborn: [15, 80],
   };
@@ -167,6 +168,7 @@ function generateRandomHeight(race: Race): string {
     gnome: [36, 42],
     'half-elf': [58, 74],
     'half-orc': [66, 84],
+    orc: [68, 84],
     tiefling: [60, 78],
     dragonborn: [66, 80],
   };
@@ -186,6 +188,7 @@ function generateRandomWeight(race: Race): string {
     gnome: [35, 45],
     'half-elf': [110, 220],
     'half-orc': [180, 350],
+    orc: [200, 380],
     tiefling: [120, 250],
     dragonborn: [200, 350],
   };

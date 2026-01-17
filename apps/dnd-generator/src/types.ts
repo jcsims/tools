@@ -10,7 +10,7 @@ export type Skill =
 
 export type Race =
   | 'human' | 'elf' | 'dwarf' | 'halfling' | 'gnome'
-  | 'half-elf' | 'half-orc' | 'tiefling' | 'dragonborn';
+  | 'half-elf' | 'half-orc' | 'orc' | 'tiefling' | 'dragonborn';
 
 export type CharacterClass =
   | 'barbarian' | 'bard' | 'cleric' | 'druid' | 'fighter'
@@ -124,6 +124,13 @@ export const RACE_INFO: Record<Race, RaceInfo> = {
     abilityBonuses: { strength: 2, constitution: 1 },
     speed: 30,
     traits: ['Darkvision', 'Menacing', 'Relentless Endurance', 'Savage Attacks'],
+    languages: ['Common', 'Orc'],
+  },
+  orc: {
+    name: 'Orc',
+    abilityBonuses: { strength: 2, constitution: 1 },
+    speed: 30,
+    traits: ['Darkvision', 'Aggressive', 'Powerful Build', 'Primal Intuition'],
     languages: ['Common', 'Orc'],
   },
   tiefling: {
@@ -588,6 +595,10 @@ export const FIRST_NAMES: Record<Race, { male: string[]; female: string[] }> = {
     male: ['Dench', 'Feng', 'Gell', 'Henk', 'Holg', 'Imsh', 'Krusk', 'Ront', 'Shump', 'Thokk'],
     female: ['Baggi', 'Emen', 'Engong', 'Kansif', 'Myev', 'Neega', 'Ovak', 'Ownka', 'Shautha', 'Vola'],
   },
+  orc: {
+    male: ['Grom', 'Urzul', 'Muzgash', 'Borkul', 'Durgash', 'Ghash', 'Mogak', 'Nargol', 'Shagrat', 'Ugluk'],
+    female: ['Bula', 'Grubash', 'Murka', 'Olg', 'Rogash', 'Shel', 'Urzoga', 'Volg', 'Yazga', 'Zogga'],
+  },
   tiefling: {
     male: ['Akmenos', 'Amnon', 'Barakas', 'Damakos', 'Ekemon', 'Kairon', 'Leucis', 'Melech', 'Morthos', 'Therai'],
     female: ['Akta', 'Bryseis', 'Criella', 'Damaia', 'Ea', 'Kallista', 'Lerissa', 'Makaria', 'Nemeia', 'Orianna'],
@@ -606,6 +617,7 @@ export const SURNAMES: Record<Race, string[]> = {
   gnome: ['Beren', 'Daergel', 'Folkor', 'Garrick', 'Nackle', 'Murnig', 'Ningel', 'Raulnor', 'Scheppen', 'Turen'],
   'half-elf': ['Amastacia', 'Brightmoon', 'Dawntracker', 'Evenwood', 'Greenleaf', 'Moonwhisper', 'Nightbreeze', 'Silverfrond', 'Starfell', 'Windwalker'],
   'half-orc': ['Bloodfist', 'Doomhammer', 'Gorefang', 'Ironhide', 'Skullcrusher', 'Stormrage', 'Thundermaw', 'Warbringer', 'Worldbreaker', 'Wyrmslayer'],
+  orc: ['Blacktusk', 'Bonegnaw', 'Fleshrender', 'Goreaxe', 'Ironmaw', 'Rotfang', 'Skullsplitter', 'Stonecrusher', 'Warmace', 'Worgripper'],
   tiefling: ['Carrion', 'Despair', 'Fear', 'Glory', 'Hope', 'Misery', 'Nowhere', 'Poetry', 'Sorrow', 'Torment'],
   dragonborn: ['Clethtinthiallor', 'Daardendrian', 'Delmirev', 'Drachedandion', 'Fenkenkabradon', 'Kepeshkmolik', 'Kerrhylon', 'Kimbatuul', 'Linxakasendalor', 'Myastan'],
 };
