@@ -25,7 +25,7 @@ interface TooltipState {
 
 const STAFF_LINES = 5;
 const LINE_SPACING = 20;
-const BEAT_WIDTH = 60;
+const BEAT_WIDTH = 100;
 const NOTE_RADIUS = 10;
 
 export const DrumNotation: React.FC<DrumNotationProps> = ({
