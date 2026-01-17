@@ -54,7 +54,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     const beatsPerMeasure = measures[currentMeasure]?.timeSignature[0] ?? 4;
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
     const measureStart = currentMeasure * (measureWidth + 40) + 60;
-    const playheadX = measureStart + currentBeat * BEAT_WIDTH + BEAT_WIDTH / 2;
+    const playheadX = measureStart + currentBeat * BEAT_WIDTH;
 
     const containerWidth = container.clientWidth;
     const scrollLeft = container.scrollLeft;
@@ -107,7 +107,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
   ): number => {
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
     const measureStart = measureIndex * (measureWidth + 40) + 60; // 40px gap between measures
-    return measureStart + beat * BEAT_WIDTH + BEAT_WIDTH / 2;
+    return measureStart + beat * BEAT_WIDTH;
   };
 
   const renderNote = (
@@ -223,7 +223,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const clickX = e.clientX - rect.left;
-              const beatPosition = (clickX - BEAT_WIDTH / 2) / BEAT_WIDTH;
+              const beatPosition = clickX / BEAT_WIDTH;
               const snappedBeat = Math.round(beatPosition * 4) / 4; // Snap to 16th notes
               if (
                 snappedBeat >= 0 &&
@@ -294,7 +294,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
               ))}
             {beatIndex < beatsPerMeasure && (
               <text
-                x={measureStart + beatIndex * BEAT_WIDTH + BEAT_WIDTH / 2}
+                x={measureStart + beatIndex * BEAT_WIDTH}
                 y={30 + (STAFF_LINES - 1) * LINE_SPACING + 25}
                 className="beat-number"
               >
@@ -321,9 +321,9 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
         {/* Playhead */}
         {currentMeasure === measureIndex && currentBeat !== null && (
           <line
-            x1={measureStart + currentBeat * BEAT_WIDTH + BEAT_WIDTH / 2}
+            x1={measureStart + currentBeat * BEAT_WIDTH}
             y1={20}
-            x2={measureStart + currentBeat * BEAT_WIDTH + BEAT_WIDTH / 2}
+            x2={measureStart + currentBeat * BEAT_WIDTH}
             y2={30 + (STAFF_LINES - 1) * LINE_SPACING + 10}
             stroke="#00ff88"
             strokeWidth={3}
