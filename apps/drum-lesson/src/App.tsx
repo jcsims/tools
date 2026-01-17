@@ -14,8 +14,30 @@ import "./App.css";
 const STORAGE_KEY = "drum-lesson-songs";
 
 function App() {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  // Initialize songs from localStorage to avoid race condition
+  const [songs, setSongs] = useState<Song[]>(() => {
+    const savedSongs = localStorage.getItem(STORAGE_KEY);
+    if (savedSongs) {
+      try {
+        return JSON.parse(savedSongs);
+      } catch (e) {
+        console.error("Failed to parse saved songs:", e);
+      }
+    }
+    return [];
+  });
+  const [currentSong, setCurrentSong] = useState<Song | null>(() => {
+    const savedSongs = localStorage.getItem(STORAGE_KEY);
+    if (savedSongs) {
+      try {
+        const parsed = JSON.parse(savedSongs);
+        return parsed.length > 0 ? parsed[0] : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState<number | null>(null);
   const [currentMeasure, setCurrentMeasure] = useState<number | null>(null);
@@ -27,27 +49,9 @@ function App() {
   const playbackRef = useRef<number | null>(null);
   const lastBeatTimeRef = useRef<number>(0);
 
-  // Load songs from localStorage on mount
-  useEffect(() => {
-    const savedSongs = localStorage.getItem(STORAGE_KEY);
-    if (savedSongs) {
-      try {
-        const parsed = JSON.parse(savedSongs);
-        setSongs(parsed);
-        if (parsed.length > 0) {
-          setCurrentSong(parsed[0]);
-        }
-      } catch (e) {
-        console.error("Failed to parse saved songs:", e);
-      }
-    }
-  }, []);
-
   // Save songs to localStorage whenever they change
   useEffect(() => {
-    if (songs.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
   }, [songs]);
 
   const handleBpmChange = (newBpm: number) => {
