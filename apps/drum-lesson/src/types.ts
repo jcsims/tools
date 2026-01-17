@@ -134,4 +134,67 @@ export const SAMPLE_SONGS: Omit<Song, 'id' | 'createdAt'>[] = [
       },
     ],
   },
+  {
+    name: '16th Note Hi-Hat Groove',
+    bpm: 85,
+    measures: [
+      {
+        timeSignature: [4, 4],
+        notes: [
+          // 16th note hi-hats throughout
+          { instrument: 'hihat', beat: 0 },
+          { instrument: 'hihat', beat: 0.25 },
+          { instrument: 'hihat', beat: 0.5 },
+          { instrument: 'hihat', beat: 0.75 },
+          { instrument: 'hihat', beat: 1 },
+          { instrument: 'hihat', beat: 1.25 },
+          { instrument: 'hihat', beat: 1.5 },
+          { instrument: 'hihat', beat: 1.75 },
+          { instrument: 'hihat', beat: 2 },
+          { instrument: 'hihat', beat: 2.25 },
+          { instrument: 'hihat', beat: 2.5 },
+          { instrument: 'hihat', beat: 2.75 },
+          { instrument: 'hihat', beat: 3 },
+          { instrument: 'hihat', beat: 3.25 },
+          { instrument: 'hihat', beat: 3.5 },
+          { instrument: 'hihat', beat: 3.75 },
+          // Kick on 1 and 3
+          { instrument: 'kick', beat: 0 },
+          { instrument: 'kick', beat: 2 },
+          // Snare on 2 and 4
+          { instrument: 'snare', beat: 1 },
+          { instrument: 'snare', beat: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Funky 16th Kick Pattern',
+    bpm: 95,
+    measures: [
+      {
+        timeSignature: [4, 4],
+        notes: [
+          // Hi-hat on 8th notes
+          { instrument: 'hihat', beat: 0 },
+          { instrument: 'hihat', beat: 0.5 },
+          { instrument: 'hihat', beat: 1 },
+          { instrument: 'hihat', beat: 1.5 },
+          { instrument: 'hihat', beat: 2 },
+          { instrument: 'hihat', beat: 2.5 },
+          { instrument: 'hihat', beat: 3 },
+          { instrument: 'hihat', beat: 3.5 },
+          // Syncopated kick with 16th notes
+          { instrument: 'kick', beat: 0 },
+          { instrument: 'kick', beat: 0.75 },
+          { instrument: 'kick', beat: 2 },
+          { instrument: 'kick', beat: 2.5 },
+          { instrument: 'kick', beat: 3.25 },
+          // Snare on 2 and 4
+          { instrument: 'snare', beat: 1 },
+          { instrument: 'snare', beat: 3 },
+        ],
+      },
+    ],
+  },
 ];

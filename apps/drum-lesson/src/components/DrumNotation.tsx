@@ -224,7 +224,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
               const rect = e.currentTarget.getBoundingClientRect();
               const clickX = e.clientX - rect.left;
               const beatPosition = (clickX - BEAT_WIDTH / 2) / BEAT_WIDTH;
-              const snappedBeat = Math.round(beatPosition * 2) / 2;
+              const snappedBeat = Math.round(beatPosition * 4) / 4; // Snap to 16th notes
               if (
                 snappedBeat >= 0 &&
                 snappedBeat < beatsPerMeasure &&
@@ -278,6 +278,20 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
                 beatIndex === 0 || beatIndex === beatsPerMeasure ? 2 : 1
               }
             />
+            {/* 16th note subdivision markers within each beat */}
+            {beatIndex < beatsPerMeasure &&
+              [0.25, 0.5, 0.75].map((subBeat) => (
+                <line
+                  key={subBeat}
+                  x1={measureStart + (beatIndex + subBeat) * BEAT_WIDTH}
+                  y1={subBeat === 0.5 ? 28 : 32}
+                  x2={measureStart + (beatIndex + subBeat) * BEAT_WIDTH}
+                  y2={30 + (STAFF_LINES - 1) * LINE_SPACING + 2}
+                  stroke={subBeat === 0.5 ? "#3a3a3a" : "#2a2a2a"}
+                  strokeWidth={1}
+                  strokeDasharray={subBeat === 0.5 ? "none" : "2 2"}
+                />
+              ))}
             {beatIndex < beatsPerMeasure && (
               <text
                 x={measureStart + beatIndex * BEAT_WIDTH + BEAT_WIDTH / 2}

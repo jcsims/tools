@@ -55,8 +55,8 @@ export function songToTab(song: Song): string {
   lines.push(`# BPM: ${song.bpm}`);
   lines.push("");
 
-  // Determine grid resolution (8th notes = 2 columns per beat)
-  const subdivision = 0.5;
+  // Determine grid resolution (16th notes = 4 columns per beat)
+  const subdivision = 0.25;
   const beatsPerMeasure = song.measures[0]?.timeSignature[0] || 4;
   const columnsPerMeasure = beatsPerMeasure / subdivision;
 
@@ -106,8 +106,10 @@ export function songToTab(song: Song): string {
       const beat = col * subdivision;
       if (beat === Math.floor(beat)) {
         beatLine += (beat + 1).toString();
+      } else if (beat % 0.5 === 0) {
+        beatLine += "+"; // 8th note position ("and")
       } else {
-        beatLine += "+";
+        beatLine += "."; // 16th note positions ("e" and "a")
       }
     }
     beatLine += "|";
@@ -177,7 +179,7 @@ export function tabToSong(
 
   // Determine columns per measure from first measure
   const columnsPerMeasure = measureStrings[0].length;
-  const subdivision = 0.5;
+  const subdivision = 0.25; // 16th notes
   const beatsPerMeasure = columnsPerMeasure * subdivision;
 
   // Build measures
