@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { Song, Measure, DrumInstrument } from "./types";
 import { SAMPLE_SONGS } from "./types";
 import { playDrumSound, resumeAudio } from "./audioEngine";
+import { migrateSongs, createVersionedStorage } from "./migration";
 import { DrumNotation } from "./components/DrumNotation";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { SongManager } from "./components/SongManager";
@@ -14,12 +15,13 @@ import "./App.css";
 const STORAGE_KEY = "drum-lesson-songs";
 
 function App() {
-  // Initialize songs from localStorage to avoid race condition
+  // Initialize songs from localStorage with migration support
   const [songs, setSongs] = useState<Song[]>(() => {
-    const savedSongs = localStorage.getItem(STORAGE_KEY);
-    if (savedSongs) {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
       try {
-        return JSON.parse(savedSongs);
+        const parsed = JSON.parse(savedData);
+        return migrateSongs(parsed);
       } catch (e) {
         console.error("Failed to parse saved songs:", e);
       }
@@ -27,11 +29,12 @@ function App() {
     return [];
   });
   const [currentSong, setCurrentSong] = useState<Song | null>(() => {
-    const savedSongs = localStorage.getItem(STORAGE_KEY);
-    if (savedSongs) {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
       try {
-        const parsed = JSON.parse(savedSongs);
-        return parsed.length > 0 ? parsed[0] : null;
+        const parsed = JSON.parse(savedData);
+        const migrated = migrateSongs(parsed);
+        return migrated.length > 0 ? migrated[0] : null;
       } catch {
         return null;
       }
@@ -49,9 +52,9 @@ function App() {
   const playbackRef = useRef<number | null>(null);
   const lastBeatTimeRef = useRef<number>(0);
 
-  // Save songs to localStorage whenever they change
+  // Save songs to localStorage with versioned format
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(createVersionedStorage(songs)));
   }, [songs]);
 
   const handleBpmChange = (newBpm: number) => {
@@ -93,7 +96,7 @@ function App() {
     let beat = 0;
     const beatsPerMeasure = currentSong.measures[0].timeSignature[0];
     const beatDuration = (60 / currentSong.bpm) * 1000; // ms per beat
-    const subdivision = 0.5; // 8th notes
+    const subdivision = 0.25; // 16th notes
     const subdivisionDuration = beatDuration * subdivision;
 
     lastBeatTimeRef.current = performance.now();

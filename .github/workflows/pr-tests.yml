@@ -1,0 +1,38 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/drum-lesson/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: apps/drum-lesson
+
+      - name: Run tests
+        run: npm test
+        working-directory: apps/drum-lesson
+
+      - name: Run linter
+        run: npm run lint
+        working-directory: apps/drum-lesson
+
+      - name: Build
+        run: npm run build
+        working-directory: apps/drum-lesson
