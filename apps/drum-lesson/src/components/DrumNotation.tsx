@@ -53,7 +53,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     const container = scrollContainerRef.current;
     const beatsPerMeasure = measures[currentMeasure]?.timeSignature[0] ?? 4;
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
-    const measureStart = currentMeasure * (measureWidth + 40) + 60;
+    const measureStart = currentMeasure * measureWidth + 60;
     const playheadX = measureStart + currentBeat * BEAT_WIDTH;
 
     const containerWidth = container.clientWidth;
@@ -106,7 +106,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     beatsPerMeasure: number,
   ): number => {
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
-    const measureStart = measureIndex * (measureWidth + 40) + 60; // 40px gap between measures
+    const measureStart = measureIndex * measureWidth + 60;
     return measureStart + beat * BEAT_WIDTH;
   };
 
@@ -203,7 +203,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
   const renderMeasure = (measure: Measure, measureIndex: number) => {
     const beatsPerMeasure = measure.timeSignature[0];
     const measureWidth = beatsPerMeasure * BEAT_WIDTH;
-    const measureStart = measureIndex * (measureWidth + 40) + 60;
+    const measureStart = measureIndex * measureWidth + 60;
 
     return (
       <g key={measureIndex}>
@@ -336,7 +336,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
   };
 
   const totalWidth = measures.reduce((acc, measure) => {
-    return acc + measure.timeSignature[0] * BEAT_WIDTH + 40;
+    return acc + measure.timeSignature[0] * BEAT_WIDTH;
   }, 60);
 
   return (
