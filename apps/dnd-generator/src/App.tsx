@@ -9,24 +9,22 @@ import './App.css';
 const STORAGE_KEY = 'dnd-characters';
 
 function App() {
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
-  const [view, setView] = useState<'list' | 'edit' | 'sheet'>('list');
-
-  // Load characters from localStorage
-  useEffect(() => {
+  // Initialize characters from localStorage to avoid race condition
+  const [characters, setCharacters] = useState<Character[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setCharacters(parsed);
+        return JSON.parse(saved);
       } catch (e) {
         console.error('Failed to load characters:', e);
       }
     }
-  }, []);
+    return [];
+  });
+  const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
+  const [view, setView] = useState<'list' | 'edit' | 'sheet'>('list');
 
-  // Save characters to localStorage
+  // Save characters to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(characters));
   }, [characters]);
