@@ -15,8 +15,8 @@ const SELECTABLE_INSTRUMENTS: DrumInstrument[] = [
   'hihat-open',
   'high-tom',
   'mid-tom',
-  'snare',
   'floor-tom',
+  'snare',
   'kick',
   'practice-pad',
 ];
