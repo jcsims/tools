@@ -79,6 +79,8 @@
 
 .drum-note {
   transition: transform 0.1s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .drum-note:hover .note-symbol {
