@@ -1,25 +1,13 @@
 import React from 'react';
 import type { DrumInstrument } from '../types';
 import { INSTRUMENT_INFO } from '../types';
+import { SELECTABLE_INSTRUMENTS } from '../constants';
 import './InstrumentSelector.css';
 
 interface InstrumentSelectorProps {
   selectedInstrument: DrumInstrument;
   onSelectInstrument: (instrument: DrumInstrument) => void;
 }
-
-const SELECTABLE_INSTRUMENTS: DrumInstrument[] = [
-  'crash',
-  'ride',
-  'hihat',
-  'hihat-open',
-  'high-tom',
-  'mid-tom',
-  'floor-tom',
-  'snare',
-  'kick',
-  'practice-pad',
-];
 
 export const InstrumentSelector: React.FC<InstrumentSelectorProps> = ({
   selectedInstrument,

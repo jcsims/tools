@@ -4,6 +4,8 @@ import type { Song, Measure, DrumInstrument } from "./types";
 import { SAMPLE_SONGS } from "./types";
 import { playDrumSound, resumeAudio } from "./audioEngine";
 import { migrateSongs, createVersionedStorage } from "./migration";
+import { beatsEqual } from "./beatUtils";
+import { SUBDIVISION } from "./constants";
 import { DrumNotation } from "./components/DrumNotation";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { SongManager } from "./components/SongManager";
@@ -14,32 +16,25 @@ import "./App.css";
 
 const STORAGE_KEY = "drum-lesson-songs";
 
+function loadSongsFromStorage(): Song[] {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(savedData);
+      return migrateSongs(parsed);
+    } catch (e) {
+      console.error("Failed to parse saved songs:", e);
+    }
+  }
+  return [];
+}
+
 function App() {
   // Initialize songs from localStorage with migration support
-  const [songs, setSongs] = useState<Song[]>(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        return migrateSongs(parsed);
-      } catch (e) {
-        console.error("Failed to parse saved songs:", e);
-      }
-    }
-    return [];
-  });
+  const [songs, setSongs] = useState<Song[]>(loadSongsFromStorage);
   const [currentSong, setCurrentSong] = useState<Song | null>(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        const migrated = migrateSongs(parsed);
-        return migrated.length > 0 ? migrated[0] : null;
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    const initialSongs = loadSongsFromStorage();
+    return initialSongs.length > 0 ? initialSongs[0] : null;
   });
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState<number | null>(null);
@@ -68,8 +63,8 @@ function App() {
   };
 
   const playNotesAtBeat = useCallback((measure: Measure, beat: number) => {
-    const notesToPlay = measure.notes.filter(
-      (note) => Math.abs(note.beat - beat) < 0.01,
+    const notesToPlay = measure.notes.filter((note) =>
+      beatsEqual(note.beat, beat),
     );
     notesToPlay.forEach((note) => {
       playDrumSound(note.instrument);
@@ -96,8 +91,7 @@ function App() {
     let beat = 0;
     const beatsPerMeasure = currentSong.measures[0].timeSignature[0];
     const beatDuration = (60 / currentSong.bpm) * 1000; // ms per beat
-    const subdivision = 0.25; // 16th notes
-    const subdivisionDuration = beatDuration * subdivision;
+    const subdivisionDuration = beatDuration * SUBDIVISION;
 
     lastBeatTimeRef.current = performance.now();
     setCurrentMeasure(0);
@@ -113,7 +107,7 @@ function App() {
       if (elapsed >= subdivisionDuration) {
         lastBeatTimeRef.current = now - (elapsed % subdivisionDuration);
 
-        beat += subdivision;
+        beat += SUBDIVISION;
 
         if (beat >= beatsPerMeasure) {
           beat = 0;
@@ -159,9 +153,9 @@ function App() {
   };
 
   const handleDeleteSong = (id: string) => {
-    setSongs((prev) => prev.filter((s) => s.id !== id));
+    const remaining = songs.filter((s) => s.id !== id);
+    setSongs(remaining);
     if (currentSong?.id === id) {
-      const remaining = songs.filter((s) => s.id !== id);
       setCurrentSong(remaining.length > 0 ? remaining[0] : null);
     }
   };
@@ -226,7 +220,7 @@ function App() {
     const updatedMeasures = [...currentSong.measures];
     const measure = { ...updatedMeasures[measureIndex] };
     const existingNoteIndex = measure.notes.findIndex(
-      (n) => Math.abs(n.beat - beat) < 0.01 && n.instrument === instrument,
+      (n) => beatsEqual(n.beat, beat) && n.instrument === instrument,
     );
 
     if (existingNoteIndex >= 0) {

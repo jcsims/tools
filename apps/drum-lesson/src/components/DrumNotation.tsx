@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Measure, DrumNote, DrumInstrument } from "../types";
 import { INSTRUMENT_INFO } from "../types";
+import {
+  STAFF_LINES,
+  LINE_SPACING,
+  BEAT_WIDTH,
+  NOTE_RADIUS,
+  SELECTABLE_INSTRUMENTS,
+} from "../constants";
 import "./DrumNotation.css";
 
 interface DrumNotationProps {
@@ -22,11 +29,6 @@ interface TooltipState {
   y: number;
   instrument: DrumInstrument | null;
 }
-
-const STAFF_LINES = 5;
-const LINE_SPACING = 20;
-const BEAT_WIDTH = 100;
-const NOTE_RADIUS = 10;
 
 export const DrumNotation: React.FC<DrumNotationProps> = ({
   measures,
@@ -114,7 +116,6 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     note: DrumNote,
     measureIndex: number,
     beatsPerMeasure: number,
-    noteIndex: number,
   ) => {
     const info = INSTRUMENT_INFO[note.instrument];
     const x = getXPosition(note.beat, measureIndex, beatsPerMeasure);
@@ -133,7 +134,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     // This ensures scale animation works correctly from the note's center
     return (
       <g
-        key={`${measureIndex}-${noteIndex}-${note.beat}-${note.instrument}`}
+        key={`${measureIndex}-${note.instrument}-${note.beat}`}
         className={`drum-note ${isActive ? "active" : ""} ${isEditMode ? "editable" : ""}`}
         transform={`translate(${x}, ${y})`}
         onMouseEnter={(e) => handleNoteHover(e, note.instrument)}
@@ -314,8 +315,8 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
         </text>
 
         {/* Notes */}
-        {measure.notes.map((note, noteIndex) =>
-          renderNote(note, measureIndex, beatsPerMeasure, noteIndex),
+        {measure.notes.map((note) =>
+          renderNote(note, measureIndex, beatsPerMeasure),
         )}
 
         {/* Playhead */}
@@ -344,16 +345,17 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
       <div className="notation-legend">
         <h4>Drum Legend:</h4>
         <div className="legend-items">
-          {Object.entries(INSTRUMENT_INFO)
-            .filter(([key]) => key !== "rest")
-            .map(([key, info]) => (
-              <div key={key} className="legend-item">
+          {SELECTABLE_INSTRUMENTS.map((instrument) => {
+            const info = INSTRUMENT_INFO[instrument];
+            return (
+              <div key={instrument} className="legend-item">
                 <span className="legend-symbol" style={{ color: info.color }}>
                   {info.symbol}
                 </span>
                 <span className="legend-name">{info.name}</span>
               </div>
-            ))}
+            );
+          })}
         </div>
       </div>
 
