@@ -2,11 +2,36 @@ import type { DrumInstrument } from './types';
 
 let audioContext: AudioContext | null = null;
 
+// Cached noise buffers to avoid creating new buffers on every sound
+const noiseBufferCache: Map<number, AudioBuffer> = new Map();
+
 function getAudioContext(): AudioContext {
   if (!audioContext) {
     audioContext = new AudioContext();
+    // Clear cache when context is recreated
+    noiseBufferCache.clear();
   }
   return audioContext;
+}
+
+/**
+ * Get or create a noise buffer of the specified duration.
+ * Buffers are cached and reused to reduce GC pressure.
+ */
+function getNoiseBuffer(ctx: AudioContext, duration: number): AudioBuffer {
+  // Round duration to avoid too many cache entries
+  const durationMs = Math.round(duration * 1000);
+
+  let buffer = noiseBufferCache.get(durationMs);
+  if (!buffer) {
+    buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+    const noiseData = buffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    noiseBufferCache.set(durationMs, buffer);
+  }
+  return buffer;
 }
 
 // Synthesize drum sounds using Web Audio API
@@ -88,14 +113,8 @@ function playKick(ctx: AudioContext, time: number): void {
 
 function playSnare(ctx: AudioContext, time: number): void {
   // Noise for the snare wires
-  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) {
-    noiseData[i] = Math.random() * 2 - 1;
-  }
-
   const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer;
+  noise.buffer = getNoiseBuffer(ctx, 0.2);
 
   const noiseFilter = ctx.createBiquadFilter();
   noiseFilter.type = 'highpass';
@@ -133,14 +152,8 @@ function playHiHat(ctx: AudioContext, time: number, open: boolean): void {
   const duration = open ? 0.3 : 0.08;
 
   // Noise
-  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) {
-    noiseData[i] = Math.random() * 2 - 1;
-  }
-
   const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer;
+  noise.buffer = getNoiseBuffer(ctx, duration);
 
   const filter = ctx.createBiquadFilter();
   filter.type = 'highpass';
@@ -162,14 +175,8 @@ function playCymbal(ctx: AudioContext, time: number, type: 'crash' | 'ride'): vo
   const filterFreq = type === 'crash' ? 3000 : 5000;
 
   // Noise
-  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) {
-    noiseData[i] = Math.random() * 2 - 1;
-  }
-
   const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer;
+  noise.buffer = getNoiseBuffer(ctx, duration);
 
   const filter = ctx.createBiquadFilter();
   filter.type = 'bandpass';

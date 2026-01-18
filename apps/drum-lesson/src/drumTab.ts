@@ -1,4 +1,5 @@
 import type { Song, Measure, DrumInstrument } from "./types";
+import { beatsEqual } from "./beatUtils";
 
 // Mapping from our instrument types to standard tab line labels
 const INSTRUMENT_TO_TAB: Record<DrumInstrument, string> = {
@@ -72,7 +73,7 @@ export function songToTab(song: Song): string {
         const beat = col * subdivision;
         const note = measure.notes.find(
           (n) =>
-            Math.abs(n.beat - beat) < 0.01 &&
+            beatsEqual(n.beat, beat) &&
             (n.instrument === instrument ||
               (instrument === "hihat" && n.instrument === "hihat-open"))
         );
