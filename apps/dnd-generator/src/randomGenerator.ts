@@ -2,9 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   Character,
   Race,
-  CharacterClass,
-  Background,
-  Alignment,
   AbilityScores,
   Skill,
 } from './types';
@@ -16,6 +13,7 @@ import {
   SURNAMES,
   getAbilityModifier,
 } from './types';
+import { RACES, CLASSES, BACKGROUNDS, ALIGNMENTS } from './constants';
 
 // Roll 4d6, drop lowest
 function roll4d6DropLowest(): number {
@@ -41,10 +39,19 @@ function randomChoice<T>(array: readonly T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+// Fisher-Yates shuffle for unbiased randomization
+function shuffleArray<T>(array: readonly T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 // Random selections helper (n unique items)
 function randomChoices<T>(array: readonly T[], n: number): T[] {
-  const shuffled = [...array].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+  return shuffleArray(array).slice(0, n);
 }
 
 // Generate random name based on race
@@ -57,15 +64,10 @@ export function generateName(race: Race): string {
 
 // Generate random character
 export function generateRandomCharacter(): Character {
-  const races: Race[] = ['human', 'elf', 'dwarf', 'halfling', 'gnome', 'half-elf', 'half-orc', 'orc', 'tiefling', 'dragonborn'];
-  const classes: CharacterClass[] = ['barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'ranger', 'rogue', 'sorcerer', 'warlock', 'wizard'];
-  const backgrounds: Background[] = ['acolyte', 'charlatan', 'criminal', 'entertainer', 'folk-hero', 'guild-artisan', 'hermit', 'noble', 'outlander', 'sage', 'sailor', 'soldier', 'urchin'];
-  const alignments: Alignment[] = ['lawful-good', 'neutral-good', 'chaotic-good', 'lawful-neutral', 'true-neutral', 'chaotic-neutral', 'lawful-evil', 'neutral-evil', 'chaotic-evil'];
-
-  const race = randomChoice(races);
-  const characterClass = randomChoice(classes);
-  const background = randomChoice(backgrounds);
-  const alignment = randomChoice(alignments);
+  const race = randomChoice(RACES);
+  const characterClass = randomChoice(CLASSES);
+  const background = randomChoice(BACKGROUNDS);
+  const alignment = randomChoice(ALIGNMENTS);
   const level = 1;
 
   const raceInfo = RACE_INFO[race];
@@ -142,6 +144,11 @@ export function generateRandomCharacter(): Character {
   };
 }
 
+// Generate random integer in range [min, max] inclusive
+function randomInRange(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function generateRandomAge(race: Race): string {
   const ageRanges: Record<Race, [number, number]> = {
     human: [18, 60],
@@ -156,7 +163,7 @@ function generateRandomAge(race: Race): string {
     dragonborn: [15, 80],
   };
   const [min, max] = ageRanges[race];
-  return String(Math.floor(Math.random() * (max - min)) + min);
+  return String(randomInRange(min, max));
 }
 
 function generateRandomHeight(race: Race): string {
@@ -173,7 +180,7 @@ function generateRandomHeight(race: Race): string {
     dragonborn: [66, 80],
   };
   const [min, max] = heightRanges[race];
-  const inches = Math.floor(Math.random() * (max - min)) + min;
+  const inches = randomInRange(min, max);
   const feet = Math.floor(inches / 12);
   const remainingInches = inches % 12;
   return `${feet}'${remainingInches}"`;
@@ -193,7 +200,7 @@ function generateRandomWeight(race: Race): string {
     dragonborn: [200, 350],
   };
   const [min, max] = weightRanges[race];
-  return `${Math.floor(Math.random() * (max - min)) + min} lbs`;
+  return `${randomInRange(min, max)} lbs`;
 }
 
 // Create empty character template

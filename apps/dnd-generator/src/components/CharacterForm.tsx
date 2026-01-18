@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Character, Race, CharacterClass, Background, Alignment, Skill, AbilityScore } from '../types';
 import {
   RACE_INFO,
@@ -11,6 +11,7 @@ import {
   formatModifier,
   getProficiencyBonus,
 } from '../types';
+import { RACES, CLASSES, BACKGROUNDS, ALIGNMENTS, ALL_SKILLS, ABILITY_SCORES } from '../constants';
 import { generateAbilityScores, generateName } from '../randomGenerator';
 import './CharacterForm.css';
 
@@ -21,20 +22,23 @@ interface CharacterFormProps {
   onViewSheet: () => void;
 }
 
-const RACES: Race[] = ['human', 'elf', 'dwarf', 'halfling', 'gnome', 'half-elf', 'half-orc', 'tiefling', 'dragonborn'];
-const CLASSES: CharacterClass[] = ['barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'ranger', 'rogue', 'sorcerer', 'warlock', 'wizard'];
-const BACKGROUNDS: Background[] = ['acolyte', 'charlatan', 'criminal', 'entertainer', 'folk-hero', 'guild-artisan', 'hermit', 'noble', 'outlander', 'sage', 'sailor', 'soldier', 'urchin'];
-const ALIGNMENTS: Alignment[] = ['lawful-good', 'neutral-good', 'chaotic-good', 'lawful-neutral', 'true-neutral', 'chaotic-neutral', 'lawful-evil', 'neutral-evil', 'chaotic-evil'];
-const ALL_SKILLS: Skill[] = ['acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception', 'history', 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion', 'religion', 'sleight-of-hand', 'stealth', 'survival'];
-const ABILITY_SCORES: AbilityScore[] = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+/** Truncate text with ellipsis only if it exceeds maxLength */
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+}
 
 export function CharacterForm({ character, onSave, onCancel, onViewSheet }: CharacterFormProps) {
+  // Use character.id as key to reset form state when switching characters
+  // This avoids the anti-pattern of syncing props to state via useEffect
   const [formData, setFormData] = useState<Character>(character);
   const [activeTab, setActiveTab] = useState<'basic' | 'abilities' | 'skills' | 'personality' | 'equipment'>('basic');
 
-  useEffect(() => {
+  // Reset form when character changes (using key pattern would be better in parent)
+  const [lastCharacterId, setLastCharacterId] = useState(character.id);
+  if (character.id !== lastCharacterId) {
     setFormData(character);
-  }, [character.id]);
+    setLastCharacterId(character.id);
+  }
 
   const updateField = <K extends keyof Character>(field: K, value: Character[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -356,7 +360,7 @@ export function CharacterForm({ character, onSave, onCancel, onViewSheet }: Char
                 <strong>Suggestions:</strong>
                 {backgroundInfo.personalityTraits.slice(0, 2).map((trait, i) => (
                   <button key={i} type="button" onClick={() => updateField('personalityTraits', trait)}>
-                    {trait.slice(0, 40)}...
+                    {truncate(trait, 40)}
                   </button>
                 ))}
               </div>
@@ -392,7 +396,7 @@ export function CharacterForm({ character, onSave, onCancel, onViewSheet }: Char
                 <strong>Suggestions:</strong>
                 {backgroundInfo.bonds.slice(0, 2).map((bond, i) => (
                   <button key={i} type="button" onClick={() => updateField('bonds', bond)}>
-                    {bond.slice(0, 40)}...
+                    {truncate(bond, 40)}
                   </button>
                 ))}
               </div>
@@ -410,7 +414,7 @@ export function CharacterForm({ character, onSave, onCancel, onViewSheet }: Char
                 <strong>Suggestions:</strong>
                 {backgroundInfo.flaws.slice(0, 2).map((flaw, i) => (
                   <button key={i} type="button" onClick={() => updateField('flaws', flaw)}>
-                    {flaw.slice(0, 40)}...
+                    {truncate(flaw, 40)}
                   </button>
                 ))}
               </div>

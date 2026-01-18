@@ -10,6 +10,7 @@ import {
   formatModifier,
   getProficiencyBonus,
 } from '../types';
+import { ALL_SKILLS, ABILITY_SCORES } from '../constants';
 import './CharacterSheet.css';
 
 interface CharacterSheetProps {
@@ -18,15 +19,6 @@ interface CharacterSheetProps {
   onPrint: () => void;
   onBack: () => void;
 }
-
-const ALL_SKILLS: Skill[] = [
-  'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
-  'history', 'insight', 'intimidation', 'investigation', 'medicine',
-  'nature', 'perception', 'performance', 'persuasion', 'religion',
-  'sleight-of-hand', 'stealth', 'survival'
-];
-
-const ABILITY_SCORES: AbilityScore[] = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
 
 export function CharacterSheet({ character, onEdit, onPrint, onBack }: CharacterSheetProps) {
   const raceInfo = RACE_INFO[character.race];
@@ -172,7 +164,7 @@ export function CharacterSheet({ character, onEdit, onPrint, onBack }: Character
             <div className="hp-section">
               <div className="hp-max">
                 <label>Hit Point Maximum</label>
-                <span>{classInfo.hitDie + getAbilityModifier(character.abilityScores.constitution)}</span>
+                <span>{character.hitPoints}</span>
               </div>
               <div className="hp-current">
                 <div className="hp-box"></div>
