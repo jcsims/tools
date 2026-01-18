@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Character } from '../types';
 import { RACE_INFO, CLASS_INFO, ALIGNMENT_NAMES } from '../types';
 import './CharacterList.css';
@@ -19,7 +20,10 @@ export function CharacterList({
   onCreateNew,
   onGenerateRandom,
 }: CharacterListProps) {
-  const sortedCharacters = [...characters].sort((a, b) => b.createdAt - a.createdAt);
+  const sortedCharacters = useMemo(
+    () => [...characters].sort((a, b) => b.createdAt - a.createdAt),
+    [characters]
+  );
 
   return (
     <div className="character-list">
