@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   type GameState,
   type DefenderType,
+  type EnemyType,
   type WaveConfig,
   GAME_WIDTH,
   GAME_HEIGHT,
@@ -22,10 +23,35 @@ import {
   getBastionMaxHealth,
   getBastionArmor,
   getDefenderName,
-  getDefenderEmoji,
-  getEnemyEmoji,
 } from './gameEngine';
 import './App.css';
+
+// Import defender and bastion images
+import archerImg from './assets/archer.png';
+import knightImg from './assets/knight.png';
+import wizardImg from './assets/wizard.png';
+import castleImg from './assets/castle.png';
+
+// Import enemy images
+import goblinImg from './assets/goblin.png';
+import orcImg from './assets/orc.png';
+import trollImg from './assets/troll.png';
+import dragonImg from './assets/dragon.png';
+
+// Map defender types to their images
+const defenderImages: Record<DefenderType, string> = {
+  soldier: knightImg,
+  archer: archerImg,
+  wizard: wizardImg,
+};
+
+// Map enemy types to their images
+const enemyImages: Record<EnemyType, string> = {
+  goblin: goblinImg,
+  orc: orcImg,
+  troll: trollImg,
+  dragon: dragonImg,
+};
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(createInitialState);
@@ -263,7 +289,7 @@ function App() {
             className="bastion"
             style={{ left: BASTION_X - 40, top: BASTION_Y - 50 }}
           >
-            <div className="bastion-icon">🏰</div>
+            <img src={castleImg} alt="Bastion" className="bastion-icon" />
             <div className="bastion-level">Lv.{gameState.bastion.level}</div>
             <div className="bastion-health-bar">
               <div
@@ -283,7 +309,7 @@ function App() {
               style={{ left: defender.x - 20, top: defender.y - 20 }}
               onClick={(e) => selectDefender(defender.id, e)}
             >
-              <span className="defender-emoji">{getDefenderEmoji(defender.type)}</span>
+              <img src={defenderImages[defender.type]} alt={defender.type} className="defender-img" />
               <span className="defender-level">{defender.level}</span>
               {selectedDefenderId === defender.id && (
                 <div
@@ -306,7 +332,7 @@ function App() {
               className={`enemy ${enemy.type}`}
               style={{ left: enemy.x - 15, top: enemy.y - 15 }}
             >
-              <span className="enemy-emoji">{getEnemyEmoji(enemy.type)}</span>
+              <img src={enemyImages[enemy.type]} alt={enemy.type} className="enemy-img" />
               <div className="enemy-health-bar">
                 <div
                   className="enemy-health-fill"
@@ -383,7 +409,7 @@ function App() {
                     onClick={() => selectDefenderType(type)}
                     disabled={!canAfford}
                   >
-                    <span className="item-emoji">{getDefenderEmoji(type)}</span>
+                    <img src={defenderImages[type]} alt={type} className="item-img" />
                     <span className="item-name">{getDefenderName(type)}</span>
                     <span className="item-cost">{cost}g</span>
                   </button>
@@ -401,7 +427,7 @@ function App() {
           {selectedDefender && (
             <div className="selected-panel">
               <h3>
-                {getDefenderEmoji(selectedDefender.type)} {getDefenderName(selectedDefender.type)}
+                <img src={defenderImages[selectedDefender.type]} alt={selectedDefender.type} className="panel-img" /> {getDefenderName(selectedDefender.type)}
               </h3>
               <div className="stats">
                 <p>Level: {selectedDefender.level}</p>
@@ -444,7 +470,7 @@ function App() {
               <div className="wave-enemies">
                 {waveConfig.enemies.map((e, i) => (
                   <p key={i}>
-                    {getEnemyEmoji(e.type)} x{e.count}
+                    <img src={enemyImages[e.type as EnemyType]} alt={e.type} className="wave-enemy-img" /> x{e.count}
                   </p>
                 ))}
               </div>
