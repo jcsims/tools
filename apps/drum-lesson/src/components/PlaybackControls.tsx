@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './PlaybackControls.css';
 
 interface PlaybackControlsProps {
@@ -18,14 +18,33 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onStop,
   onRestart,
 }) => {
+  const [bpmInputValue, setBpmInputValue] = useState(bpm.toString());
+
+  useEffect(() => {
+    setBpmInputValue(bpm.toString());
+  }, [bpm]);
+
   const handleBpmSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
     onBpmChange(parseInt(e.target.value));
   };
 
   const handleBpmInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
+    setBpmInputValue(e.target.value);
+  };
+
+  const applyBpmValue = () => {
+    const value = parseInt(bpmInputValue);
     if (!isNaN(value) && value >= 30 && value <= 200) {
       onBpmChange(value);
+    } else {
+      setBpmInputValue(bpm.toString());
+    }
+  };
+
+  const handleBpmKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      applyBpmValue();
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -74,11 +93,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         </div>
         <div className="bpm-value-container">
           <input
-            type="number"
-            min="30"
-            max="200"
-            value={bpm}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={bpmInputValue}
             onChange={handleBpmInput}
+            onBlur={applyBpmValue}
+            onKeyDown={handleBpmKeyDown}
             className="bpm-input"
           />
           <span className="bpm-unit">BPM</span>
