@@ -4,18 +4,23 @@ import {
   type DefenderType,
   type EnemyType,
   type WaveConfig,
+  type AdventureParty,
   GAME_WIDTH,
   GAME_HEIGHT,
   PLACEMENT_ZONE,
   BASTION_X,
   BASTION_Y,
+  ENEMY_STATS,
+  ADVENTURE_PARTY_STATS,
 } from './types';
 import {
   createInitialState,
   createDefender,
   upgradeDefender,
   createEnemy,
+  createAdventureParty,
   generateWaveConfig,
+  getAdventurePartyCount,
   updateGameState,
   getDefenderCost,
   getDefenderUpgradeCost,
@@ -23,6 +28,7 @@ import {
   getBastionMaxHealth,
   getBastionArmor,
   getDefenderName,
+  getEnemyName,
 } from './gameEngine';
 import './App.css';
 
@@ -37,6 +43,10 @@ import goblinImg from './assets/goblin.png';
 import orcImg from './assets/orc.png';
 import trollImg from './assets/troll.png';
 import dragonImg from './assets/dragon.png';
+import barbarianImg from './assets/barbarian.png';
+
+// Import ally images
+import adventurerImg from './assets/adventurer.png';
 
 // Map defender types to their images
 const defenderImages: Record<DefenderType, string> = {
@@ -51,12 +61,14 @@ const enemyImages: Record<EnemyType, string> = {
   orc: orcImg,
   troll: trollImg,
   dragon: dragonImg,
+  barbarian: barbarianImg,
 };
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(createInitialState);
   const [waveConfig, setWaveConfig] = useState<WaveConfig | null>(null);
   const [selectedDefenderId, setSelectedDefenderId] = useState<string | null>(null);
+  const [showBestiary, setShowBestiary] = useState(false);
   const spawnQueueRef = useRef<{ type: string; count: number }[]>([]);
   const lastSpawnTimeRef = useRef<number>(0);
   const gameLoopRef = useRef<number | null>(null);
@@ -114,10 +126,18 @@ function App() {
     spawnQueueRef.current = config.enemies.map((e) => ({ ...e }));
     lastSpawnTimeRef.current = 0;
 
+    // Spawn adventure parties (good guys that help!)
+    const partyCount = getAdventurePartyCount(nextWave);
+    const newParties: AdventureParty[] = [];
+    for (let i = 0; i < partyCount; i++) {
+      newParties.push(createAdventureParty(nextWave));
+    }
+
     setGameState((prev) => ({
       ...prev,
       wave: nextWave,
       isWaveActive: true,
+      adventureParties: [...prev.adventureParties, ...newParties],
     }));
   }, [gameState.wave]);
 
@@ -325,7 +345,7 @@ function App() {
             </div>
           ))}
 
-          {/* Enemies */}
+          {/* Enemies (Evil) */}
           {gameState.enemies.map((enemy) => (
             <div
               key={enemy.id}
@@ -337,6 +357,23 @@ function App() {
                 <div
                   className="enemy-health-fill"
                   style={{ width: `${(enemy.health / enemy.maxHealth) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+
+          {/* Adventure Parties (Good allies!) */}
+          {gameState.adventureParties.map((party) => (
+            <div
+              key={party.id}
+              className="adventure-party"
+              style={{ left: party.x - 18, top: party.y - 18 }}
+            >
+              <img src={adventurerImg} alt="Adventure Party" className="party-img" />
+              <div className="party-health-bar">
+                <div
+                  className="party-health-fill"
+                  style={{ width: `${(party.health / party.maxHealth) * 100}%` }}
                 />
               </div>
             </div>
@@ -476,8 +513,72 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* Bestiary Button */}
+          <button className="bestiary-btn" onClick={() => setShowBestiary(true)}>
+            View Bestiary
+          </button>
         </div>
       </div>
+
+      {/* Bestiary Modal */}
+      {showBestiary && (
+        <div className="bestiary-overlay" onClick={() => setShowBestiary(false)}>
+          <div className="bestiary-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Bestiary</h2>
+            <button className="close-btn" onClick={() => setShowBestiary(false)}>X</button>
+
+            <div className="bestiary-content">
+              <div className="bestiary-section">
+                <h3 className="evil-header">Evil Forces</h3>
+                {(['goblin', 'barbarian', 'orc', 'troll', 'dragon'] as EnemyType[]).map((type) => {
+                  const stats = ENEMY_STATS[type];
+                  return (
+                    <div key={type} className={`bestiary-entry evil ${type}`}>
+                      <img src={enemyImages[type]} alt={type} className="bestiary-img" />
+                      <div className="bestiary-info">
+                        <h4>{getEnemyName(type)}</h4>
+                        <div className="bestiary-stats">
+                          <span>HP: {stats.baseHealth}</span>
+                          <span>DMG: {stats.baseDamage}</span>
+                          <span>SPD: {stats.baseSpeed}</span>
+                          <span>Gold: {stats.baseGoldReward}</span>
+                        </div>
+                        <p className="bestiary-desc">
+                          {type === 'goblin' && 'Weak but numerous. The basic enemy force.'}
+                          {type === 'barbarian' && 'Fast and erratic! Moves unpredictably.'}
+                          {type === 'orc' && 'Strong warriors with heavy damage.'}
+                          {type === 'troll' && 'Massive brutes that can take a beating.'}
+                          {type === 'dragon' && 'The ultimate threat. Extremely powerful.'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="bestiary-section">
+                <h3 className="good-header">Good Allies</h3>
+                <div className="bestiary-entry good">
+                  <img src={adventurerImg} alt="Adventure Party" className="bestiary-img" />
+                  <div className="bestiary-info">
+                    <h4>Adventure Party</h4>
+                    <div className="bestiary-stats">
+                      <span>HP: {ADVENTURE_PARTY_STATS.adventurers.baseHealth}</span>
+                      <span>DMG: {ADVENTURE_PARTY_STATS.adventurers.baseDamage}</span>
+                      <span>SPD: {ADVENTURE_PARTY_STATS.adventurers.baseSpeed}</span>
+                      <span>ATK SPD: {ADVENTURE_PARTY_STATS.adventurers.baseAttackSpeed}/s</span>
+                    </div>
+                    <p className="bestiary-desc">
+                      Heroic allies that arrive to help! They seek out and attack the most powerful enemies on the battlefield. Appears from Wave 4 onwards.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .game-area {
