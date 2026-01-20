@@ -6,12 +6,16 @@ import {
   type DefenderType,
   type EnemyType,
   type Projectile,
+  type AdventureParty,
+  type AdventurePartyType,
   DEFENDER_STATS,
   ENEMY_STATS,
   BASTION_STATS,
+  ADVENTURE_PARTY_STATS,
   BASTION_X,
   BASTION_Y,
   GAME_HEIGHT,
+  GAME_WIDTH,
 } from './types';
 
 // Generate unique IDs
@@ -34,6 +38,7 @@ export function createInitialState(): GameState {
     },
     defenders: [],
     enemies: [],
+    adventureParties: [],
     projectiles: [],
     selectedDefenderType: null,
     placementMode: false,
@@ -116,7 +121,7 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
   // Spawn from the left side at random Y positions
   const spawnY = 80 + Math.random() * (GAME_HEIGHT - 160);
 
-  return {
+  const enemy: Enemy = {
     id: generateId(),
     type,
     health,
@@ -129,6 +134,37 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
     targetX: BASTION_X,
     targetY: BASTION_Y,
   };
+
+  // Barbarians get erratic movement properties
+  if (type === 'barbarian') {
+    enemy.erraticAngle = Math.random() * Math.PI * 2;
+    enemy.erraticTimer = 0;
+  }
+
+  return enemy;
+}
+
+// Create adventure party (good allies)
+export function createAdventureParty(wave: number): AdventureParty {
+  const stats = ADVENTURE_PARTY_STATS.adventurers;
+  const health = stats.baseHealth + stats.healthPerWave * (wave - 1);
+
+  // Spawn from right side (near the bastion, coming to help)
+  const spawnY = 100 + Math.random() * (GAME_HEIGHT - 200);
+
+  return {
+    id: generateId(),
+    type: 'adventurers' as AdventurePartyType,
+    health,
+    maxHealth: health,
+    damage: stats.baseDamage + stats.damagePerWave * (wave - 1),
+    attackSpeed: stats.baseAttackSpeed,
+    speed: stats.baseSpeed,
+    x: GAME_WIDTH - 100,
+    y: spawnY,
+    targetId: null,
+    lastAttackTime: 0,
+  };
 }
 
 // Generate wave configuration
@@ -138,6 +174,12 @@ export function generateWaveConfig(waveNumber: number): WaveConfig {
   // Goblins appear from wave 1
   const goblinCount = Math.min(5 + waveNumber * 2, 20);
   enemies.push({ type: 'goblin', count: goblinCount });
+
+  // Barbarians appear from wave 2 - fast and erratic!
+  if (waveNumber >= 2) {
+    const barbarianCount = Math.min(Math.floor((waveNumber - 1) * 1.2), 8);
+    enemies.push({ type: 'barbarian', count: barbarianCount });
+  }
 
   // Orcs appear from wave 3
   if (waveNumber >= 3) {
@@ -163,6 +205,26 @@ export function generateWaveConfig(waveNumber: number): WaveConfig {
     spawnInterval: Math.max(800 - waveNumber * 30, 300),
     goldBonus: waveNumber * 25,
   };
+}
+
+// Calculate how many adventure parties should spawn for a wave
+export function getAdventurePartyCount(waveNumber: number): number {
+  // Adventure parties appear from wave 4 onwards
+  if (waveNumber < 4) return 0;
+  // Scale up slowly - max 3 parties
+  return Math.min(Math.floor((waveNumber - 3) * 0.5) + 1, 3);
+}
+
+// Find the most powerful enemy (for adventure parties to target)
+export function findMostPowerfulEnemy(enemies: Enemy[]): Enemy | null {
+  if (enemies.length === 0) return null;
+
+  // Calculate power score: health + damage * 5 (weight damage more)
+  return enemies.reduce((most, current) => {
+    const mostPower = most.health + most.damage * 5;
+    const currentPower = current.health + current.damage * 5;
+    return currentPower > mostPower ? current : most;
+  });
 }
 
 // Calculate distance between two points
@@ -268,9 +330,47 @@ export function updateGameState(
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist > 30) {
-        const moveX = (dx / dist) * enemy.speed * (deltaTime / 1000);
-        const moveY = (dy / dist) * enemy.speed * (deltaTime / 1000);
-        return { ...enemy, x: enemy.x + moveX, y: enemy.y + moveY };
+        let moveX: number;
+        let moveY: number;
+
+        // Barbarians move erratically - they zigzag crazily!
+        if (enemy.type === 'barbarian') {
+          // Update erratic timer and angle
+          const newTimer = (enemy.erraticTimer || 0) + deltaTime;
+          let newAngle = enemy.erraticAngle || 0;
+
+          // Change direction every 200-400ms
+          if (newTimer > 200 + Math.random() * 200) {
+            // Random angle change between -90 and +90 degrees from forward direction
+            const forwardAngle = Math.atan2(dy, dx);
+            newAngle = forwardAngle + (Math.random() - 0.5) * Math.PI;
+            enemy.erraticTimer = 0;
+          } else {
+            enemy.erraticTimer = newTimer;
+          }
+          enemy.erraticAngle = newAngle;
+
+          // Move with erratic angle but biased toward target
+          const erraticFactor = 0.6; // How much the erratic movement influences direction
+          const targetFactor = 1 - erraticFactor;
+          const erraticMoveX = Math.cos(newAngle) * enemy.speed * (deltaTime / 1000) * erraticFactor;
+          const erraticMoveY = Math.sin(newAngle) * enemy.speed * (deltaTime / 1000) * erraticFactor;
+          const targetMoveX = (dx / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
+          const targetMoveY = (dy / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
+
+          moveX = erraticMoveX + targetMoveX;
+          moveY = erraticMoveY + targetMoveY;
+
+          // Keep barbarians in bounds (they're crazy but not that crazy)
+          const newX = Math.max(0, Math.min(GAME_WIDTH, enemy.x + moveX));
+          const newY = Math.max(50, Math.min(GAME_HEIGHT - 50, enemy.y + moveY));
+          return { ...enemy, x: newX, y: newY };
+        } else {
+          // Normal enemies move straight toward bastion
+          moveX = (dx / dist) * enemy.speed * (deltaTime / 1000);
+          moveY = (dy / dist) * enemy.speed * (deltaTime / 1000);
+          return { ...enemy, x: enemy.x + moveX, y: enemy.y + moveY };
+        }
       } else {
         // Attack the bastion
         bastionDamage += enemy.damage;
@@ -278,6 +378,62 @@ export function updateGameState(
       }
     })
     .filter((e): e is Enemy => e !== null);
+
+  // Update adventure parties (they hunt powerful enemies!)
+  let newAdventureParties = [...state.adventureParties];
+  newAdventureParties = newAdventureParties.map((party) => {
+    // Find or update target - always go for the most powerful enemy
+    let target: Enemy | null = null;
+    if (party.targetId) {
+      target = newEnemies.find((e) => e.id === party.targetId) || null;
+    }
+    // Re-target if no target or periodically find better target
+    if (!target) {
+      target = findMostPowerfulEnemy(newEnemies);
+    }
+
+    if (!target) {
+      // No enemies, stay in place
+      return { ...party, targetId: null };
+    }
+
+    const dx = target.x - party.x;
+    const dy = target.y - party.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // Attack range for adventure parties
+    const attackRange = 50;
+
+    if (dist <= attackRange) {
+      // In range - attack if cooldown is ready
+      const attackInterval = 1000 / party.attackSpeed;
+      if (currentTime - party.lastAttackTime >= attackInterval) {
+        // Deal damage to the enemy
+        const targetIndex = newEnemies.findIndex((e) => e.id === target!.id);
+        if (targetIndex !== -1) {
+          const newHealth = newEnemies[targetIndex].health - party.damage;
+          if (newHealth <= 0) {
+            goldEarned += newEnemies[targetIndex].goldReward;
+            newEnemies.splice(targetIndex, 1);
+          } else {
+            newEnemies[targetIndex] = { ...newEnemies[targetIndex], health: newHealth };
+          }
+        }
+        return { ...party, targetId: target.id, lastAttackTime: currentTime };
+      }
+      return { ...party, targetId: target.id };
+    } else {
+      // Move toward target
+      const moveX = (dx / dist) * party.speed * (deltaTime / 1000);
+      const moveY = (dy / dist) * party.speed * (deltaTime / 1000);
+      return {
+        ...party,
+        x: party.x + moveX,
+        y: party.y + moveY,
+        targetId: target.id,
+      };
+    }
+  });
 
   // Apply damage to bastion with armor reduction
   if (bastionDamage > 0) {
@@ -295,7 +451,7 @@ export function updateGameState(
     }
   }
 
-  // Check if wave is complete
+  // Check if wave is complete (enemies and adventure parties finish their work)
   if (state.isWaveActive && newEnemies.length === 0) {
     newState.isWaveActive = false;
   }
@@ -305,6 +461,7 @@ export function updateGameState(
     gold: state.gold + goldEarned,
     defenders: newDefenders,
     enemies: newEnemies,
+    adventureParties: newAdventureParties,
     projectiles: newProjectiles,
   };
 }
@@ -326,6 +483,7 @@ export function getEnemyName(type: EnemyType): string {
     orc: 'Orc',
     troll: 'Troll',
     dragon: 'Dragon',
+    barbarian: 'Barbarian',
   };
   return names[type];
 }
@@ -347,6 +505,7 @@ export function getEnemyEmoji(type: EnemyType): string {
     orc: '👹',
     troll: '🧌',
     dragon: '🐉',
+    barbarian: '🪓',
   };
   return emojis[type];
 }

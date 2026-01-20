@@ -1,6 +1,7 @@
 // Unit Types
 export type DefenderType = 'soldier' | 'archer' | 'wizard';
-export type EnemyType = 'goblin' | 'orc' | 'troll' | 'dragon';
+export type EnemyType = 'goblin' | 'orc' | 'troll' | 'dragon' | 'barbarian';
+export type AdventurePartyType = 'adventurers';
 
 // Defender (player's units)
 export interface Defender {
@@ -29,6 +30,24 @@ export interface Enemy {
   y: number;
   targetX: number;
   targetY: number;
+  // Barbarian-specific: erratic movement
+  erraticAngle?: number;
+  erraticTimer?: number;
+}
+
+// Adventure Party (good allies that hunt powerful enemies)
+export interface AdventureParty {
+  id: string;
+  type: AdventurePartyType;
+  health: number;
+  maxHealth: number;
+  damage: number;
+  attackSpeed: number; // attacks per second
+  speed: number; // pixels per second
+  x: number;
+  y: number;
+  targetId: string | null;
+  lastAttackTime: number;
 }
 
 // Bastion (the thing we're defending)
@@ -78,6 +97,7 @@ export interface GameState {
   bastion: Bastion;
   defenders: Defender[];
   enemies: Enemy[];
+  adventureParties: AdventureParty[];
   projectiles: Projectile[];
   selectedDefenderType: DefenderType | null;
   placementMode: boolean;
@@ -161,6 +181,26 @@ export const ENEMY_STATS: Record<EnemyType, EnemyStats> = {
     baseGoldReward: 150,
     healthPerWave: 100,
     damagePerWave: 10,
+  },
+  barbarian: {
+    baseHealth: 60,
+    baseSpeed: 80, // Fast but erratic
+    baseDamage: 20,
+    baseGoldReward: 20,
+    healthPerWave: 15,
+    damagePerWave: 4,
+  },
+};
+
+// Adventure Party stats
+export const ADVENTURE_PARTY_STATS = {
+  adventurers: {
+    baseHealth: 100,
+    baseDamage: 30,
+    baseAttackSpeed: 1.2,
+    baseSpeed: 70,
+    healthPerWave: 25,
+    damagePerWave: 8,
   },
 };
 

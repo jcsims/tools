@@ -206,6 +206,52 @@
   transition: width 0.1s ease;
 }
 
+/* Barbarian (crazy movement indicator) */
+.enemy.barbarian {
+  animation: barbarian-shake 0.15s infinite;
+}
+
+.enemy.barbarian .enemy-img {
+  width: 36px;
+}
+
+@keyframes barbarian-shake {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Adventure Parties (Good allies) */
+.adventure-party {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.1s ease;
+  z-index: 5;
+}
+
+.party-img {
+  width: 36px;
+  height: auto;
+  filter: drop-shadow(0 0 4px rgba(100, 200, 255, 0.6));
+}
+
+.party-health-bar {
+  width: 100%;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  margin-top: 2px;
+}
+
+.party-health-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4488ff, #66aaff);
+  transition: width 0.1s ease;
+}
+
 /* Projectiles */
 .projectile {
   position: absolute;
@@ -463,6 +509,172 @@
 
 .wave-enemies p {
   margin: 4px 0;
+}
+
+/* Bestiary Button */
+.bestiary-btn {
+  margin-top: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.bestiary-btn:hover {
+  background: linear-gradient(135deg, #a0522d, #b8652d);
+  transform: scale(1.02);
+}
+
+/* Bestiary Modal */
+.bestiary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.bestiary-modal {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  border: 3px solid #ffd700;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.bestiary-modal h2 {
+  color: #ffd700;
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.bestiary-modal .close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+}
+
+.bestiary-modal .close-btn:hover {
+  background: #a00000;
+}
+
+.bestiary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bestiary-section h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid;
+}
+
+.bestiary-section h3.evil-header {
+  color: #ff4444;
+  border-color: #ff4444;
+}
+
+.bestiary-section h3.good-header {
+  color: #4488ff;
+  border-color: #4488ff;
+}
+
+.bestiary-entry {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: transform 0.2s ease;
+}
+
+.bestiary-entry:hover {
+  transform: translateX(4px);
+}
+
+.bestiary-entry.evil {
+  background: rgba(255, 68, 68, 0.15);
+  border-left: 4px solid #ff4444;
+}
+
+.bestiary-entry.good {
+  background: rgba(68, 136, 255, 0.15);
+  border-left: 4px solid #4488ff;
+}
+
+.bestiary-entry.barbarian {
+  border-left-color: #a04000;
+  animation: bestiary-shake 0.3s infinite;
+}
+
+@keyframes bestiary-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+}
+
+.bestiary-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.bestiary-info {
+  flex: 1;
+}
+
+.bestiary-info h4 {
+  color: #ffd700;
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+}
+
+.bestiary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.bestiary-stats span {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #aaa;
+}
+
+.bestiary-desc {
+  color: #888;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
 }
 
 /* Responsive */
