@@ -392,6 +392,18 @@ function App() {
             );
           })}
 
+          {/* Attack effects on bastion */}
+          {gameState.attackEffects.map((effect) => (
+            <div
+              key={effect.id}
+              className={`attack-effect ${effect.enemyType}`}
+              style={{ left: effect.x - 20, top: effect.y - 20 }}
+            >
+              <img src={enemyImages[effect.enemyType]} alt={effect.enemyType} className="attack-enemy-img" />
+              <div className="attack-slash" />
+            </div>
+          ))}
+
           {/* Game over overlay */}
           {gameState.isGameOver && (
             <div className="game-over-overlay">

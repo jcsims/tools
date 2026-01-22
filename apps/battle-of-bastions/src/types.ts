@@ -99,6 +99,7 @@ export interface GameState {
   enemies: Enemy[];
   adventureParties: AdventureParty[];
   projectiles: Projectile[];
+  attackEffects: AttackEffect[];
   selectedDefenderType: DefenderType | null;
   placementMode: boolean;
 }
@@ -113,6 +114,16 @@ export interface Projectile {
   targetId: string;
   type: DefenderType;
   progress: number; // 0 to 1
+}
+
+// Attack effect shown when enemies hit the bastion
+export interface AttackEffect {
+  id: string;
+  enemyType: EnemyType;
+  x: number;
+  y: number;
+  createdAt: number;
+  duration: number; // ms
 }
 
 // Constants

@@ -8,6 +8,7 @@ import {
   type Projectile,
   type AdventureParty,
   type AdventurePartyType,
+  type AttackEffect,
   DEFENDER_STATS,
   ENEMY_STATS,
   BASTION_STATS,
@@ -40,6 +41,7 @@ export function createInitialState(): GameState {
     enemies: [],
     adventureParties: [],
     projectiles: [],
+    attackEffects: [],
     selectedDefenderType: null,
     placementMode: false,
   };
@@ -322,6 +324,13 @@ export function updateGameState(
 
   // Update enemies (movement)
   let bastionDamage = 0;
+  let newAttackEffects: AttackEffect[] = [...state.attackEffects];
+
+  // Clean up expired attack effects
+  newAttackEffects = newAttackEffects.filter(
+    (effect) => currentTime - effect.createdAt < effect.duration
+  );
+
   newEnemies = newEnemies
     .map((enemy) => {
       // Move toward bastion
@@ -372,8 +381,16 @@ export function updateGameState(
           return { ...enemy, x: enemy.x + moveX, y: enemy.y + moveY };
         }
       } else {
-        // Attack the bastion
+        // Attack the bastion - create attack effect
         bastionDamage += enemy.damage;
+        newAttackEffects.push({
+          id: generateId(),
+          enemyType: enemy.type,
+          x: enemy.x,
+          y: enemy.y,
+          createdAt: currentTime,
+          duration: 500, // 500ms attack animation
+        });
         return null; // Remove enemy after attacking
       }
     })
@@ -463,6 +480,7 @@ export function updateGameState(
     enemies: newEnemies,
     adventureParties: newAdventureParties,
     projectiles: newProjectiles,
+    attackEffects: newAttackEffects,
   };
 }
 
