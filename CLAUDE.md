@@ -51,11 +51,12 @@ public/
 ## Adding a New Tool
 
 1. Create `apps/<tool-name>/` with its own `package.json`
-2. Configure `vite.config.ts` with `base: '/tools/<tool-name>/'`
+2. Configure `vite.config.ts` with `base: './'` (relative paths for GitHub Pages and Netlify compatibility)
 3. Add `npm run build:<tool-name>` script to root `package.json`
 4. Update `scripts/build-all.js` to include the new app
 5. Add link in `public/index.html`
 
 ## Deployment
 
-Automatic via GitHub Actions on push to `main`. Workflow builds all apps and deploys to GitHub Pages.
+- **Production:** Automatic via GitHub Actions on push to `main`. Deploys to GitHub Pages.
+- **PR Previews:** Automatic via Netlify. Each PR gets a preview deployment.
