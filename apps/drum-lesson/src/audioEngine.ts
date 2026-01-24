@@ -5,11 +5,16 @@ let audioContext: AudioContext | null = null;
 // Cached noise buffers to avoid creating new buffers on every sound
 const noiseBufferCache: Map<number, AudioBuffer> = new Map();
 
-function getAudioContext(): AudioContext {
+function getAudioContext(): AudioContext | null {
   if (!audioContext) {
-    audioContext = new AudioContext();
-    // Clear cache when context is recreated
-    noiseBufferCache.clear();
+    try {
+      audioContext = new AudioContext();
+      // Clear cache when context is recreated
+      noiseBufferCache.clear();
+    } catch (e) {
+      console.error('Failed to create AudioContext:', e);
+      return null;
+    }
   }
   return audioContext;
 }
@@ -39,6 +44,8 @@ export function playDrumSound(instrument: DrumInstrument): void {
   if (instrument === 'rest') return;
 
   const ctx = getAudioContext();
+  if (!ctx) return;
+
   const now = ctx.currentTime;
 
   switch (instrument) {
@@ -129,6 +136,7 @@ function playSnare(ctx: AudioContext, time: number): void {
   noiseGain.connect(ctx.destination);
 
   noise.start(time);
+  noise.stop(time + 0.2);
 
   // Oscillator for the body
   const osc = ctx.createOscillator();
@@ -168,6 +176,7 @@ function playHiHat(ctx: AudioContext, time: number, open: boolean): void {
   gain.connect(ctx.destination);
 
   noise.start(time);
+  noise.stop(time + duration);
 }
 
 function playCymbal(ctx: AudioContext, time: number, type: 'crash' | 'ride'): void {
@@ -192,6 +201,7 @@ function playCymbal(ctx: AudioContext, time: number, type: 'crash' | 'ride'): vo
   gain.connect(ctx.destination);
 
   noise.start(time);
+  noise.stop(time + duration);
 }
 
 function playTom(ctx: AudioContext, time: number, freq: number): void {
@@ -234,7 +244,7 @@ function playPracticePad(ctx: AudioContext, time: number): void {
 // Resume audio context if suspended (needed for browser autoplay policies)
 export async function resumeAudio(): Promise<void> {
   const ctx = getAudioContext();
-  if (ctx.state === 'suspended') {
+  if (ctx && ctx.state === 'suspended') {
     await ctx.resume();
   }
 }

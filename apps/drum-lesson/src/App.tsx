@@ -29,13 +29,15 @@ function loadSongsFromStorage(): Song[] {
   return [];
 }
 
+// Load once at module level to avoid double parsing during initialization
+const initialSongs = loadSongsFromStorage();
+
 function App() {
   // Initialize songs from localStorage with migration support
-  const [songs, setSongs] = useState<Song[]>(loadSongsFromStorage);
-  const [currentSong, setCurrentSong] = useState<Song | null>(() => {
-    const initialSongs = loadSongsFromStorage();
-    return initialSongs.length > 0 ? initialSongs[0] : null;
-  });
+  const [songs, setSongs] = useState<Song[]>(initialSongs);
+  const [currentSong, setCurrentSong] = useState<Song | null>(
+    initialSongs.length > 0 ? initialSongs[0] : null
+  );
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState<number | null>(null);
   const [currentMeasure, setCurrentMeasure] = useState<number | null>(null);
@@ -47,18 +49,31 @@ function App() {
   const playbackRef = useRef<number | null>(null);
   const lastBeatTimeRef = useRef<number>(0);
 
+  // Cleanup playback on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (playbackRef.current) {
+        cancelAnimationFrame(playbackRef.current);
+      }
+    };
+  }, []);
+
   // Save songs to localStorage with versioned format
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(createVersionedStorage(songs)));
   }, [songs]);
 
+  // Helper to update both currentSong and songs list in one operation
+  const updateCurrentSong = useCallback((updatedSong: Song) => {
+    setCurrentSong(updatedSong);
+    setSongs((prev) =>
+      prev.map((s) => (s.id === updatedSong.id ? updatedSong : s))
+    );
+  }, []);
+
   const handleBpmChange = (newBpm: number) => {
     if (currentSong) {
-      const updatedSong = { ...currentSong, bpm: newBpm };
-      setCurrentSong(updatedSong);
-      setSongs((prev) =>
-        prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
-      );
+      updateCurrentSong({ ...currentSong, bpm: newBpm });
     }
   };
 
@@ -232,11 +247,7 @@ function App() {
     }
 
     updatedMeasures[measureIndex] = measure;
-    const updatedSong = { ...currentSong, measures: updatedMeasures };
-    setCurrentSong(updatedSong);
-    setSongs((prev) =>
-      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
-    );
+    updateCurrentSong({ ...currentSong, measures: updatedMeasures });
   };
 
   const handleAddMeasure = () => {
@@ -248,27 +259,19 @@ function App() {
       timeSignature: lastMeasure?.timeSignature || [4, 4],
     };
 
-    const updatedSong = {
+    updateCurrentSong({
       ...currentSong,
       measures: [...currentSong.measures, newMeasure],
-    };
-    setCurrentSong(updatedSong);
-    setSongs((prev) =>
-      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
-    );
+    });
   };
 
   const handleRemoveMeasure = () => {
     if (!currentSong || currentSong.measures.length <= 1) return;
 
-    const updatedSong = {
+    updateCurrentSong({
       ...currentSong,
       measures: currentSong.measures.slice(0, -1),
-    };
-    setCurrentSong(updatedSong);
-    setSongs((prev) =>
-      prev.map((s) => (s.id === currentSong.id ? updatedSong : s)),
-    );
+    });
   };
 
   const toggleEditMode = () => {

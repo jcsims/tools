@@ -11,7 +11,7 @@ interface SongManagerProps {
   onCreateSong: () => void;
 }
 
-export const SongManager: React.FC<SongManagerProps> = ({
+export const SongManager: React.FC<SongManagerProps> = React.memo(({
   songs,
   currentSongId,
   onSelectSong,
@@ -149,4 +149,4 @@ export const SongManager: React.FC<SongManagerProps> = ({
       )}
     </div>
   );
-};
+});

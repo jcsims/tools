@@ -10,7 +10,7 @@ interface PlaybackControlsProps {
   onRestart: () => void;
 }
 
-export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
+export const PlaybackControls: React.FC<PlaybackControlsProps> = React.memo(({
   bpm,
   onBpmChange,
   isPlaying,
@@ -107,4 +107,4 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </div>
     </div>
   );
-};
+});
