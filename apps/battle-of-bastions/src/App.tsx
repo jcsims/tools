@@ -93,9 +93,12 @@ function App() {
                 queue.shift();
               }
               lastSpawnTimeRef.current = timestamp;
+              const updatedState = updateGameState(prev, deltaTime, timestamp);
+              const newEnemies = new Map(updatedState.enemies);
+              newEnemies.set(newEnemy.id, newEnemy);
               return {
-                ...updateGameState(prev, deltaTime, timestamp),
-                enemies: [...prev.enemies, newEnemy],
+                ...updatedState,
+                enemies: newEnemies,
               };
             }
           }
@@ -128,17 +131,24 @@ function App() {
 
     // Spawn adventure parties (good guys that help!)
     const partyCount = getAdventurePartyCount(nextWave);
-    const newParties: AdventureParty[] = [];
+    const newParties = new Map<string, AdventureParty>();
     for (let i = 0; i < partyCount; i++) {
-      newParties.push(createAdventureParty(nextWave));
+      const party = createAdventureParty(nextWave);
+      newParties.set(party.id, party);
     }
 
-    setGameState((prev) => ({
-      ...prev,
-      wave: nextWave,
-      isWaveActive: true,
-      adventureParties: [...prev.adventureParties, ...newParties],
-    }));
+    setGameState((prev) => {
+      const mergedParties = new Map(prev.adventureParties);
+      for (const [id, party] of newParties) {
+        mergedParties.set(id, party);
+      }
+      return {
+        ...prev,
+        wave: nextWave,
+        isWaveActive: true,
+        adventureParties: mergedParties,
+      };
+    });
   }, [gameState.wave]);
 
   // Handle canvas click for placement
@@ -266,11 +276,11 @@ function App() {
 
   // Auto-collect wave bonus
   useEffect(() => {
-    if (!gameState.isWaveActive && gameState.enemies.length === 0 && waveConfig) {
+    if (!gameState.isWaveActive && gameState.enemies.size === 0 && waveConfig) {
       const timer = setTimeout(collectWaveBonus, 500);
       return () => clearTimeout(timer);
     }
-  }, [gameState.isWaveActive, gameState.enemies.length, waveConfig, collectWaveBonus]);
+  }, [gameState.isWaveActive, gameState.enemies.size, waveConfig, collectWaveBonus]);
 
   const selectedDefender = selectedDefenderId
     ? gameState.defenders.find((d) => d.id === selectedDefenderId)
@@ -346,7 +356,7 @@ function App() {
           ))}
 
           {/* Enemies (Evil) */}
-          {gameState.enemies.map((enemy) => (
+          {[...gameState.enemies.values()].map((enemy) => (
             <div
               key={enemy.id}
               className={`enemy ${enemy.type}`}
@@ -363,7 +373,7 @@ function App() {
           ))}
 
           {/* Adventure Parties (Good allies!) */}
-          {gameState.adventureParties.map((party) => (
+          {[...gameState.adventureParties.values()].map((party) => (
             <div
               key={party.id}
               className="adventure-party"
@@ -380,7 +390,7 @@ function App() {
           ))}
 
           {/* Projectiles */}
-          {gameState.projectiles.map((proj) => {
+          {[...gameState.projectiles.values()].map((proj) => {
             const x = proj.fromX + (proj.toX - proj.fromX) * proj.progress;
             const y = proj.fromY + (proj.toY - proj.fromY) * proj.progress;
             return (
