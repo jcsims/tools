@@ -7,7 +7,7 @@ interface MeasureControlsProps {
   onRemoveMeasure: () => void;
 }
 
-export const MeasureControls: React.FC<MeasureControlsProps> = ({
+export const MeasureControls: React.FC<MeasureControlsProps> = React.memo(({
   measureCount,
   onAddMeasure,
   onRemoveMeasure,
@@ -36,4 +36,4 @@ export const MeasureControls: React.FC<MeasureControlsProps> = ({
       </div>
     </div>
   );
-};
+});
