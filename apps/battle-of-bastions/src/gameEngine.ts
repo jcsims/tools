@@ -38,9 +38,9 @@ export function createInitialState(): GameState {
       armor: BASTION_STATS.baseArmor,
     },
     defenders: [],
-    enemies: [],
-    adventureParties: [],
-    projectiles: [],
+    enemies: new Map(),
+    adventureParties: new Map(),
+    projectiles: new Map(),
     attackEffects: [],
     selectedDefenderType: null,
     placementMode: false,
@@ -218,15 +218,22 @@ export function getAdventurePartyCount(waveNumber: number): number {
 }
 
 // Find the most powerful enemy (for adventure parties to target)
-export function findMostPowerfulEnemy(enemies: Enemy[]): Enemy | null {
-  if (enemies.length === 0) return null;
+export function findMostPowerfulEnemy(enemies: Map<string, Enemy>): Enemy | null {
+  if (enemies.size === 0) return null;
+
+  let most: Enemy | null = null;
+  let mostPower = -Infinity;
 
   // Calculate power score: health + damage * 5 (weight damage more)
-  return enemies.reduce((most, current) => {
-    const mostPower = most.health + most.damage * 5;
-    const currentPower = current.health + current.damage * 5;
-    return currentPower > mostPower ? current : most;
-  });
+  for (const enemy of enemies.values()) {
+    const power = enemy.health + enemy.damage * 5;
+    if (power > mostPower) {
+      most = enemy;
+      mostPower = power;
+    }
+  }
+
+  return most;
 }
 
 // Calculate distance between two points
@@ -234,16 +241,22 @@ export function distance(x1: number, y1: number, x2: number, y2: number): number
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
-// Find closest enemy within range
-export function findTarget(defender: Defender, enemies: Enemy[]): Enemy | null {
-  let closest: Enemy | null = null;
-  let closestDist = Infinity;
+// Calculate squared distance (faster - avoids sqrt for comparisons)
+export function distanceSquared(x1: number, y1: number, x2: number, y2: number): number {
+  return (x2 - x1) ** 2 + (y2 - y1) ** 2;
+}
 
-  for (const enemy of enemies) {
-    const dist = distance(defender.x, defender.y, enemy.x, enemy.y);
-    if (dist <= defender.range && dist < closestDist) {
+// Find closest enemy within range (uses squared distance for performance)
+export function findTarget(defender: Defender, enemies: Map<string, Enemy>): Enemy | null {
+  let closest: Enemy | null = null;
+  let closestDistSq = Infinity;
+  const rangeSq = defender.range * defender.range;
+
+  for (const enemy of enemies.values()) {
+    const distSq = distanceSquared(defender.x, defender.y, enemy.x, enemy.y);
+    if (distSq <= rangeSq && distSq < closestDistSq) {
       closest = enemy;
-      closestDist = dist;
+      closestDistSq = distSq;
     }
   }
 
@@ -278,209 +291,275 @@ export function updateGameState(
     return state;
   }
 
-  let newState = { ...state };
-  let newEnemies = [...state.enemies];
-  let newProjectiles = [...state.projectiles];
+  // Track changes to avoid unnecessary object creation
   let goldEarned = 0;
+  let bastionDamage = 0;
+  const enemiesToDelete = new Set<string>();
+  const projectilesToDelete = new Set<string>();
+
+  // Use Maps for O(1) lookups - clone only if we make changes
+  const enemyUpdates = new Map<string, Enemy>();
+  const projectileUpdates = new Map<string, Projectile>();
+  const partyUpdates = new Map<string, AdventureParty>();
+  let newAttackEffects: AttackEffect[] | null = null;
 
   // Update projectiles
-  const projectileSpeed = 400; // pixels per second
-  newProjectiles = newProjectiles
-    .map((p) => ({
-      ...p,
-      progress: p.progress + (deltaTime * projectileSpeed) / distance(p.fromX, p.fromY, p.toX, p.toY),
-    }))
-    .filter((p) => {
-      if (p.progress >= 1) {
-        // Hit the target
-        const targetIndex = newEnemies.findIndex((e) => e.id === p.targetId);
-        if (targetIndex !== -1) {
-          const target = newEnemies[targetIndex];
-          const newHealth = target.health - p.damage;
-          if (newHealth <= 0) {
-            goldEarned += target.goldReward;
-            newEnemies.splice(targetIndex, 1);
-          } else {
-            newEnemies[targetIndex] = { ...target, health: newHealth };
-          }
+  const projectileSpeed = 400;
+  for (const [id, p] of state.projectiles) {
+    const dist = distance(p.fromX, p.fromY, p.toX, p.toY);
+    const newProgress = p.progress + (deltaTime * projectileSpeed) / dist;
+
+    if (newProgress >= 1) {
+      // Hit the target
+      projectilesToDelete.add(id);
+      const target = state.enemies.get(p.targetId) ?? enemyUpdates.get(p.targetId);
+      if (target && !enemiesToDelete.has(p.targetId)) {
+        const newHealth = target.health - p.damage;
+        if (newHealth <= 0) {
+          goldEarned += target.goldReward;
+          enemiesToDelete.add(p.targetId);
+        } else {
+          enemyUpdates.set(p.targetId, { ...target, health: newHealth });
         }
-        return false;
       }
-      return true;
-    });
+    } else {
+      // Only update if progress changed significantly
+      projectileUpdates.set(id, { ...p, progress: newProgress });
+    }
+  }
+
+  // Build working enemies map (original + updates - deleted)
+  const workingEnemies = new Map<string, Enemy>();
+  for (const [id, enemy] of state.enemies) {
+    if (!enemiesToDelete.has(id)) {
+      workingEnemies.set(id, enemyUpdates.get(id) ?? enemy);
+    }
+  }
 
   // Update defenders (attack logic)
+  let defendersChanged = false;
   const newDefenders = state.defenders.map((defender) => {
     const attackInterval = 1000 / defender.attackSpeed;
     if (currentTime - defender.lastAttackTime >= attackInterval) {
-      const target = findTarget(defender, newEnemies);
+      const target = findTarget(defender, workingEnemies);
       if (target) {
-        newProjectiles.push(createProjectile(defender, target));
+        const projectile = createProjectile(defender, target);
+        projectileUpdates.set(projectile.id, projectile);
+        defendersChanged = true;
         return { ...defender, lastAttackTime: currentTime, target: target.id };
       }
     }
     return defender;
   });
 
-  // Update enemies (movement)
-  let bastionDamage = 0;
-  let newAttackEffects: AttackEffect[] = [...state.attackEffects];
-
-  // Clean up expired attack effects
-  newAttackEffects = newAttackEffects.filter(
+  // Clean up expired attack effects (only create new array if needed)
+  const validEffects = state.attackEffects.filter(
     (effect) => currentTime - effect.createdAt < effect.duration
   );
+  if (validEffects.length !== state.attackEffects.length) {
+    newAttackEffects = validEffects;
+  }
 
-  newEnemies = newEnemies
-    .map((enemy) => {
-      // Move toward bastion
-      const dx = enemy.targetX - enemy.x;
-      const dy = enemy.targetY - enemy.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+  // Update enemies (movement)
+  for (const [id, enemy] of workingEnemies) {
+    const dx = enemy.targetX - enemy.x;
+    const dy = enemy.targetY - enemy.y;
+    const distSq = dx * dx + dy * dy;
+    const dist = Math.sqrt(distSq);
 
-      if (dist > 30) {
-        let moveX: number;
-        let moveY: number;
+    if (dist > 30) {
+      let newX: number;
+      let newY: number;
+      let newErraticTimer = enemy.erraticTimer;
+      let newErraticAngle = enemy.erraticAngle;
 
-        // Barbarians move erratically - they zigzag crazily!
-        if (enemy.type === 'barbarian') {
-          // Update erratic timer and angle
-          const newTimer = (enemy.erraticTimer || 0) + deltaTime;
-          let newAngle = enemy.erraticAngle || 0;
+      // Barbarians move erratically
+      if (enemy.type === 'barbarian') {
+        const newTimer = (enemy.erraticTimer || 0) + deltaTime;
+        let angle = enemy.erraticAngle || 0;
 
-          // Change direction every 200-400ms
-          if (newTimer > 200 + Math.random() * 200) {
-            // Random angle change between -90 and +90 degrees from forward direction
-            const forwardAngle = Math.atan2(dy, dx);
-            newAngle = forwardAngle + (Math.random() - 0.5) * Math.PI;
-            enemy.erraticTimer = 0;
-          } else {
-            enemy.erraticTimer = newTimer;
-          }
-          enemy.erraticAngle = newAngle;
-
-          // Move with erratic angle but biased toward target
-          const erraticFactor = 0.6; // How much the erratic movement influences direction
-          const targetFactor = 1 - erraticFactor;
-          const erraticMoveX = Math.cos(newAngle) * enemy.speed * (deltaTime / 1000) * erraticFactor;
-          const erraticMoveY = Math.sin(newAngle) * enemy.speed * (deltaTime / 1000) * erraticFactor;
-          const targetMoveX = (dx / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
-          const targetMoveY = (dy / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
-
-          moveX = erraticMoveX + targetMoveX;
-          moveY = erraticMoveY + targetMoveY;
-
-          // Keep barbarians in bounds (they're crazy but not that crazy)
-          const newX = Math.max(0, Math.min(GAME_WIDTH, enemy.x + moveX));
-          const newY = Math.max(50, Math.min(GAME_HEIGHT - 50, enemy.y + moveY));
-          return { ...enemy, x: newX, y: newY };
+        if (newTimer > 200 + Math.random() * 200) {
+          const forwardAngle = Math.atan2(dy, dx);
+          angle = forwardAngle + (Math.random() - 0.5) * Math.PI;
+          newErraticTimer = 0;
         } else {
-          // Normal enemies move straight toward bastion
-          moveX = (dx / dist) * enemy.speed * (deltaTime / 1000);
-          moveY = (dy / dist) * enemy.speed * (deltaTime / 1000);
-          return { ...enemy, x: enemy.x + moveX, y: enemy.y + moveY };
+          newErraticTimer = newTimer;
         }
+        newErraticAngle = angle;
+
+        const erraticFactor = 0.6;
+        const targetFactor = 0.4;
+        const moveX = Math.cos(angle) * enemy.speed * (deltaTime / 1000) * erraticFactor +
+                      (dx / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
+        const moveY = Math.sin(angle) * enemy.speed * (deltaTime / 1000) * erraticFactor +
+                      (dy / dist) * enemy.speed * (deltaTime / 1000) * targetFactor;
+
+        newX = Math.max(0, Math.min(GAME_WIDTH, enemy.x + moveX));
+        newY = Math.max(50, Math.min(GAME_HEIGHT - 50, enemy.y + moveY));
       } else {
-        // Attack the bastion - create attack effect
-        bastionDamage += enemy.damage;
-        newAttackEffects.push({
-          id: generateId(),
-          enemyType: enemy.type,
-          x: enemy.x,
-          y: enemy.y,
-          createdAt: currentTime,
-          duration: 500, // 500ms attack animation
-        });
-        return null; // Remove enemy after attacking
+        const moveX = (dx / dist) * enemy.speed * (deltaTime / 1000);
+        const moveY = (dy / dist) * enemy.speed * (deltaTime / 1000);
+        newX = enemy.x + moveX;
+        newY = enemy.y + moveY;
       }
-    })
-    .filter((e): e is Enemy => e !== null);
 
-  // Update adventure parties (they hunt powerful enemies!)
-  let newAdventureParties = [...state.adventureParties];
-  newAdventureParties = newAdventureParties.map((party) => {
-    // Find or update target - always go for the most powerful enemy
+      enemyUpdates.set(id, {
+        ...enemy,
+        x: newX,
+        y: newY,
+        erraticTimer: newErraticTimer,
+        erraticAngle: newErraticAngle,
+      });
+    } else {
+      // Attack the bastion
+      bastionDamage += enemy.damage;
+      enemiesToDelete.add(id);
+
+      if (!newAttackEffects) {
+        newAttackEffects = [...state.attackEffects].filter(
+          (effect) => currentTime - effect.createdAt < effect.duration
+        );
+      }
+      newAttackEffects.push({
+        id: generateId(),
+        enemyType: enemy.type,
+        x: enemy.x,
+        y: enemy.y,
+        createdAt: currentTime,
+        duration: 500,
+      });
+    }
+  }
+
+  // Update adventure parties
+  for (const [id, party] of state.adventureParties) {
     let target: Enemy | null = null;
+
+    // Check existing target (O(1) lookup)
     if (party.targetId) {
-      target = newEnemies.find((e) => e.id === party.targetId) || null;
+      const existingTarget = enemyUpdates.get(party.targetId) ?? state.enemies.get(party.targetId);
+      if (existingTarget && !enemiesToDelete.has(party.targetId)) {
+        target = existingTarget;
+      }
     }
-    // Re-target if no target or periodically find better target
+
+    // Find new target if needed
     if (!target) {
-      target = findMostPowerfulEnemy(newEnemies);
+      // Build final enemies map for targeting
+      const finalEnemies = new Map<string, Enemy>();
+      for (const [eid, enemy] of state.enemies) {
+        if (!enemiesToDelete.has(eid)) {
+          finalEnemies.set(eid, enemyUpdates.get(eid) ?? enemy);
+        }
+      }
+      target = findMostPowerfulEnemy(finalEnemies);
     }
 
     if (!target) {
-      // No enemies, stay in place
-      return { ...party, targetId: null };
+      if (party.targetId !== null) {
+        partyUpdates.set(id, { ...party, targetId: null });
+      }
+      continue;
     }
 
     const dx = target.x - party.x;
     const dy = target.y - party.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const distSq = dx * dx + dy * dy;
+    const attackRangeSq = 50 * 50;
 
-    // Attack range for adventure parties
-    const attackRange = 50;
-
-    if (dist <= attackRange) {
-      // In range - attack if cooldown is ready
+    if (distSq <= attackRangeSq) {
       const attackInterval = 1000 / party.attackSpeed;
       if (currentTime - party.lastAttackTime >= attackInterval) {
-        // Deal damage to the enemy
-        const targetIndex = newEnemies.findIndex((e) => e.id === target!.id);
-        if (targetIndex !== -1) {
-          const newHealth = newEnemies[targetIndex].health - party.damage;
+        // Deal damage
+        if (!enemiesToDelete.has(target.id)) {
+          const currentTarget = enemyUpdates.get(target.id) ?? target;
+          const newHealth = currentTarget.health - party.damage;
           if (newHealth <= 0) {
-            goldEarned += newEnemies[targetIndex].goldReward;
-            newEnemies.splice(targetIndex, 1);
+            goldEarned += currentTarget.goldReward;
+            enemiesToDelete.add(target.id);
           } else {
-            newEnemies[targetIndex] = { ...newEnemies[targetIndex], health: newHealth };
+            enemyUpdates.set(target.id, { ...currentTarget, health: newHealth });
           }
         }
-        return { ...party, targetId: target.id, lastAttackTime: currentTime };
+        partyUpdates.set(id, { ...party, targetId: target.id, lastAttackTime: currentTime });
+      } else if (party.targetId !== target.id) {
+        partyUpdates.set(id, { ...party, targetId: target.id });
       }
-      return { ...party, targetId: target.id };
     } else {
-      // Move toward target
+      const dist = Math.sqrt(distSq);
       const moveX = (dx / dist) * party.speed * (deltaTime / 1000);
       const moveY = (dy / dist) * party.speed * (deltaTime / 1000);
-      return {
+      partyUpdates.set(id, {
         ...party,
         x: party.x + moveX,
         y: party.y + moveY,
         targetId: target.id,
-      };
+      });
     }
-  });
+  }
 
-  // Apply damage to bastion with armor reduction
+  // Build final state - only create new objects if there were changes
+  let newBastion = state.bastion;
+  let isGameOver: boolean = state.isGameOver;
+
   if (bastionDamage > 0) {
     const armorReduction = state.bastion.armor / 100;
     const actualDamage = bastionDamage * (1 - armorReduction);
     const newHealth = Math.max(0, state.bastion.health - actualDamage);
-
-    newState.bastion = {
-      ...state.bastion,
-      health: newHealth,
-    };
-
+    newBastion = { ...state.bastion, health: newHealth };
     if (newHealth <= 0) {
-      newState.isGameOver = true;
+      isGameOver = true;
     }
   }
 
-  // Check if wave is complete (enemies and adventure parties finish their work)
-  if (state.isWaveActive && newEnemies.length === 0) {
-    newState.isWaveActive = false;
+  // Build final enemies Map
+  const finalEnemies = new Map<string, Enemy>();
+  for (const [id, enemy] of state.enemies) {
+    if (!enemiesToDelete.has(id)) {
+      finalEnemies.set(id, enemyUpdates.get(id) ?? enemy);
+    }
+  }
+
+  // Build final projectiles Map
+  const finalProjectiles = new Map<string, Projectile>();
+  for (const [id] of state.projectiles) {
+    if (!projectilesToDelete.has(id)) {
+      const updated = projectileUpdates.get(id);
+      if (updated) {
+        finalProjectiles.set(id, updated);
+      }
+    }
+  }
+  // Add new projectiles
+  for (const [id, proj] of projectileUpdates) {
+    if (!state.projectiles.has(id)) {
+      finalProjectiles.set(id, proj);
+    }
+  }
+
+  // Build final parties Map
+  const finalParties = new Map<string, AdventureParty>();
+  for (const [id, party] of state.adventureParties) {
+    finalParties.set(id, partyUpdates.get(id) ?? party);
+  }
+
+  // Check wave completion
+  let isWaveActive = state.isWaveActive;
+  if (state.isWaveActive && finalEnemies.size === 0) {
+    isWaveActive = false;
   }
 
   return {
-    ...newState,
+    ...state,
     gold: state.gold + goldEarned,
-    defenders: newDefenders,
-    enemies: newEnemies,
-    adventureParties: newAdventureParties,
-    projectiles: newProjectiles,
-    attackEffects: newAttackEffects,
+    bastion: newBastion,
+    isGameOver,
+    isWaveActive,
+    defenders: defendersChanged ? newDefenders : state.defenders,
+    enemies: finalEnemies,
+    adventureParties: finalParties,
+    projectiles: finalProjectiles,
+    attackEffects: newAttackEffects ?? state.attackEffects,
   };
 }
 

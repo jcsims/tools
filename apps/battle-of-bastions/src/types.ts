@@ -96,9 +96,9 @@ export interface GameState {
   isGameOver: boolean;
   bastion: Bastion;
   defenders: Defender[];
-  enemies: Enemy[];
-  adventureParties: AdventureParty[];
-  projectiles: Projectile[];
+  enemies: Map<string, Enemy>;
+  adventureParties: Map<string, AdventureParty>;
+  projectiles: Map<string, Projectile>;
   attackEffects: AttackEffect[];
   selectedDefenderType: DefenderType | null;
   placementMode: boolean;
