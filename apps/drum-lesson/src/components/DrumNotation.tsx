@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { Measure, DrumNote, DrumInstrument } from "../types";
 import { INSTRUMENT_INFO } from "../types";
 import {
@@ -8,6 +8,7 @@ import {
   NOTE_RADIUS,
   SELECTABLE_INSTRUMENTS,
 } from "../constants";
+import { beatsEqual } from "../beatUtils";
 import "./DrumNotation.css";
 
 interface DrumNotationProps {
@@ -30,7 +31,7 @@ interface TooltipState {
   instrument: DrumInstrument | null;
 }
 
-export const DrumNotation: React.FC<DrumNotationProps> = ({
+export const DrumNotation: React.FC<DrumNotationProps> = React.memo(({
   measures,
   currentBeat,
   currentMeasure,
@@ -84,9 +85,9 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     });
   };
 
-  const handleNoteLeave = () => {
-    setTooltip({ ...tooltip, visible: false });
-  };
+  const handleNoteLeave = useCallback(() => {
+    setTooltip((prev) => ({ ...prev, visible: false }));
+  }, []);
 
   const handleNoteClick = (
     e: React.MouseEvent,
@@ -124,7 +125,7 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     const isActive =
       currentMeasure === measureIndex &&
       currentBeat !== null &&
-      Math.abs(note.beat - currentBeat) < 0.1;
+      beatsEqual(note.beat, currentBeat);
 
     const isCymbal = ["crash", "ride", "hihat", "hihat-open"].includes(
       note.instrument,
@@ -336,9 +337,13 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
     );
   };
 
-  const totalWidth = measures.reduce((acc, measure) => {
-    return acc + measure.timeSignature[0] * BEAT_WIDTH;
-  }, 60);
+  const totalWidth = useMemo(
+    () =>
+      measures.reduce((acc, measure) => {
+        return acc + measure.timeSignature[0] * BEAT_WIDTH;
+      }, 60),
+    [measures]
+  );
 
   return (
     <div className="drum-notation-container">
@@ -390,4 +395,4 @@ export const DrumNotation: React.FC<DrumNotationProps> = ({
       )}
     </div>
   );
-};
+});

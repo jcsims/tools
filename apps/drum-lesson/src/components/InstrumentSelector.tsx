@@ -9,7 +9,7 @@ interface InstrumentSelectorProps {
   onSelectInstrument: (instrument: DrumInstrument) => void;
 }
 
-export const InstrumentSelector: React.FC<InstrumentSelectorProps> = ({
+export const InstrumentSelector: React.FC<InstrumentSelectorProps> = React.memo(({
   selectedInstrument,
   onSelectInstrument,
 }) => {
@@ -38,4 +38,4 @@ export const InstrumentSelector: React.FC<InstrumentSelectorProps> = ({
       </div>
     </div>
   );
-};
+});
