@@ -6,27 +6,30 @@ import type { Puzzle } from './types.ts';
 import './App.css';
 
 export default function App() {
-  const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
+  const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
+  const [isSheet, setIsSheet] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [clueCount, setClueCount] = useState(0);
 
-  const handleGenerate = useCallback((rows: number, cols: number, fishCount: number) => {
+  const handleGenerate = useCallback((rows: number, cols: number, fishCount: number, sheet: boolean) => {
     setIsGenerating(true);
     setShowSolution(false);
 
     // Defer to next tick so the disabled state renders first
     setTimeout(() => {
-      const p = generatePuzzle(rows, cols, fishCount);
-      const clues = p.grid.flat().filter(c => c.type === 'clue').length;
-      setPuzzle(p);
-      setClueCount(clues);
+      const count = sheet ? 4 : 1;
+      const generated = Array.from({ length: count }, () => generatePuzzle(rows, cols, fishCount));
+      setPuzzles(generated);
+      setIsSheet(sheet);
       setIsGenerating(false);
     }, 10);
   }, []);
 
+  const hasPuzzles = puzzles.length > 0;
+  const first = puzzles[0];
+
   return (
-    <div className="app">
+    <div className={`app${isSheet ? ' app-sheet' : ''}`}>
       <header className="app-header no-print">
         <h1>Fish Puzzle Generator</h1>
         <p className="app-desc">
@@ -39,24 +42,47 @@ export default function App() {
         <div className="sidebar no-print">
           <Controls onGenerate={handleGenerate} isGenerating={isGenerating} />
 
-          {puzzle && (
+          {hasPuzzles && first && (
             <div className="puzzle-info">
-              <span>{puzzle.rows}×{puzzle.cols} grid</span>
-              <span>{puzzle.fishCount} fish</span>
-              <span>{clueCount} clues</span>
+              {isSheet ? (
+                <>
+                  <span>Sheet: 4 × {first.rows}×{first.cols}</span>
+                  <span>{first.fishCount} fish each</span>
+                </>
+              ) : (
+                <>
+                  <span>{first.rows}×{first.cols} grid</span>
+                  <span>{first.fishCount} fish</span>
+                  <span>{first.grid.flat().filter(c => c.type === 'clue').length} clues</span>
+                </>
+              )}
             </div>
           )}
         </div>
 
         <div className="puzzle-area">
-          {puzzle ? (
+          {hasPuzzles && first ? (
             <>
               <div className="print-header">
-                <h2>Fish Puzzle</h2>
-                <p>{puzzle.rows}×{puzzle.cols} &mdash; {puzzle.fishCount} fish to find</p>
+                <h2>Fish Puzzle{isSheet ? 's' : ''}</h2>
+                <p>
+                  {first.rows}×{first.cols} &mdash; {first.fishCount} fish to find
+                  {isSheet ? ' (each)' : ''}
+                </p>
               </div>
 
-              <PuzzleGrid puzzle={puzzle} showSolution={showSolution} />
+              {isSheet ? (
+                <div className="puzzle-sheet">
+                  {puzzles.map((p, i) => (
+                    <div key={i} className="sheet-item">
+                      <div className="sheet-item-label">Puzzle {i + 1}</div>
+                      <PuzzleGrid puzzle={p} showSolution={showSolution} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <PuzzleGrid puzzle={first} showSolution={showSolution} />
+              )}
 
               {showSolution && (
                 <div className="solution-label no-print">Solution shown</div>
@@ -71,7 +97,7 @@ export default function App() {
                 </button>
                 <button
                   className="action-btn"
-                  onClick={() => handleGenerate(puzzle.rows, puzzle.cols, puzzle.fishCount)}
+                  onClick={() => handleGenerate(first.rows, first.cols, first.fishCount, isSheet)}
                   disabled={isGenerating}
                 >
                   Regenerate

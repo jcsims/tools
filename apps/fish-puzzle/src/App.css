@@ -61,6 +61,28 @@
   display: none;
 }
 
+.puzzle-sheet {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 24px 32px;
+  justify-content: center;
+}
+
+.sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sheet-item-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .puzzle-actions {
   display: flex;
   gap: 10px;
@@ -132,6 +154,10 @@
 
 /* Print styles */
 @media print {
+  @page {
+    margin: 0.5in;
+  }
+
   .no-print {
     display: none !important;
   }
@@ -164,5 +190,32 @@
   .print-header p {
     font-size: 0.9rem;
     color: #555;
+  }
+
+  .puzzle-sheet {
+    gap: 24px 32px;
+    page-break-inside: avoid;
+  }
+
+  .sheet-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    gap: 4px;
+  }
+
+  .sheet-item-label {
+    font-size: 0.75rem;
+    color: #333;
+  }
+
+  /* Larger cells in sheet mode to use the page well */
+  .puzzle-sheet .puzzle-cell {
+    width: 56px;
+    height: 56px;
+    font-size: 1.25rem;
+  }
+
+  .puzzle-sheet .cell-fish-revealed {
+    font-size: 1.5rem;
   }
 }
