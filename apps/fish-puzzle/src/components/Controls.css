@@ -1,0 +1,136 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+}
+
+.fish-pct {
+  font-weight: 400;
+  color: #888;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.size-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.size-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #333;
+}
+
+.size-btn:hover {
+  border-color: #888;
+}
+
+.size-btn.active {
+  border-color: #2c7be5;
+  background: #e8f0fc;
+  color: #2c7be5;
+  font-weight: 600;
+}
+
+.custom-size {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.custom-size label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #444;
+}
+
+.custom-size input[type='number'] {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.custom-sep {
+  font-size: 1.1rem;
+  color: #888;
+}
+
+.fish-count-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fish-count-row input[type='range'] {
+  flex: 1;
+  accent-color: #2c7be5;
+}
+
+.fish-number {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.generate-btn {
+  padding: 10px 24px;
+  background: #2c7be5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+
+.generate-btn:hover:not(:disabled) {
+  background: #1a68d1;
+}
+
+.generate-btn:disabled {
+  background: #a0b8e0;
+  cursor: not-allowed;
+}
+
+@media print {
+  .controls {
+    display: none;
+  }
+}

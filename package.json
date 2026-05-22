@@ -7,6 +7,7 @@
     "build": "node scripts/build-all.js",
     "build:drum-lesson": "cd apps/drum-lesson && npm ci && npm run build",
     "build:dnd-generator": "cd apps/dnd-generator && npm ci && npm run build",
-    "build:battle-of-bastions": "cd apps/battle-of-bastions && npm ci && npm run build"
+    "build:battle-of-bastions": "cd apps/battle-of-bastions && npm ci && npm run build",
+    "build:fish-puzzle": "cd apps/fish-puzzle && npm ci && npm run build"
   }
 }

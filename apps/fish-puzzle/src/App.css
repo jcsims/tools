@@ -1,0 +1,168 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  gap: 28px;
+}
+
+.app-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #111;
+}
+
+.app-desc {
+  color: #555;
+  font-size: 0.95rem;
+  max-width: 600px;
+}
+
+.app-body {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.puzzle-info {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.puzzle-info span {
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.puzzle-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.print-header {
+  display: none;
+}
+
+.puzzle-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 8px 20px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #333;
+}
+
+.action-btn:hover:not(:disabled) {
+  border-color: #888;
+  background: #f5f5f5;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.print-btn {
+  border-color: #2c7be5;
+  color: #2c7be5;
+}
+
+.print-btn:hover {
+  background: #e8f0fc !important;
+}
+
+.solution-label {
+  font-size: 0.8rem;
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 24px;
+  color: #888;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .app-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .app {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+
+  .app-body {
+    display: block;
+  }
+
+  .puzzle-area {
+    align-items: center;
+  }
+
+  .print-header {
+    display: block;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .print-header h2 {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+
+  .print-header p {
+    font-size: 0.9rem;
+    color: #555;
+  }
+}
