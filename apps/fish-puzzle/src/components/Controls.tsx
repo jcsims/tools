@@ -3,25 +3,42 @@ import { PRESET_SIZES } from '../types.ts';
 import './Controls.css';
 
 interface Props {
-  onGenerate: (rows: number, cols: number, fishCount: number) => void;
+  onGenerate: (rows: number, cols: number, fishCount: number, sheet: boolean) => void;
   isGenerating: boolean;
 }
 
+type SizeMode = 'preset' | 'custom' | 'sheet';
+
+const SHEET_ROWS = 5;
+const SHEET_COLS = 5;
+const SHEET_DEFAULT_FISH = 5;
+
 export function Controls({ onGenerate, isGenerating }: Props) {
-  const [sizeMode, setSizeMode] = useState<'preset' | 'custom'>('preset');
+  const [sizeMode, setSizeMode] = useState<SizeMode>('preset');
   const [presetIndex, setPresetIndex] = useState(1); // default medium
   const [customRows, setCustomRows] = useState(8);
   const [customCols, setCustomCols] = useState(8);
   const [fishCount, setFishCount] = useState(PRESET_SIZES[1].defaultFish);
 
-  const currentRows = sizeMode === 'preset' ? PRESET_SIZES[presetIndex].rows : customRows;
-  const currentCols = sizeMode === 'preset' ? PRESET_SIZES[presetIndex].cols : customCols;
+  const currentRows =
+    sizeMode === 'sheet' ? SHEET_ROWS
+    : sizeMode === 'preset' ? PRESET_SIZES[presetIndex].rows
+    : customRows;
+  const currentCols =
+    sizeMode === 'sheet' ? SHEET_COLS
+    : sizeMode === 'preset' ? PRESET_SIZES[presetIndex].cols
+    : customCols;
   const maxFish = currentRows * currentCols - 1;
 
   function handlePresetChange(index: number) {
     setPresetIndex(index);
     setSizeMode('preset');
     setFishCount(PRESET_SIZES[index].defaultFish);
+  }
+
+  function handleSheetClick() {
+    setSizeMode('sheet');
+    setFishCount(SHEET_DEFAULT_FISH);
   }
 
   function handleCustomRowsChange(val: number) {
@@ -38,7 +55,7 @@ export function Controls({ onGenerate, isGenerating }: Props) {
 
   function handleGenerate() {
     const clampedFish = Math.max(1, Math.min(fishCount, maxFish));
-    onGenerate(currentRows, currentCols, clampedFish);
+    onGenerate(currentRows, currentCols, clampedFish, sizeMode === 'sheet');
   }
 
   return (
@@ -60,6 +77,13 @@ export function Controls({ onGenerate, isGenerating }: Props) {
             onClick={() => setSizeMode('custom')}
           >
             Custom
+          </button>
+          <button
+            className={`size-btn${sizeMode === 'sheet' ? ' active' : ''}`}
+            onClick={handleSheetClick}
+            title="Print 4 puzzles on one page"
+          >
+            Sheet (4 × 5×5)
           </button>
         </div>
 
@@ -88,11 +112,17 @@ export function Controls({ onGenerate, isGenerating }: Props) {
             </label>
           </div>
         )}
+
+        {sizeMode === 'sheet' && (
+          <p className="sheet-note">
+            Generates four 5×5 puzzles laid out 2×2 to fit one printed page.
+          </p>
+        )}
       </div>
 
       <div className="control-group">
         <label className="control-label">
-          Fish Count
+          {sizeMode === 'sheet' ? 'Fish per Puzzle' : 'Fish Count'}
           <span className="fish-pct">
             {' '}({Math.round((Math.max(1, Math.min(fishCount, maxFish)) / (currentRows * currentCols)) * 100)}%)
           </span>
@@ -121,7 +151,9 @@ export function Controls({ onGenerate, isGenerating }: Props) {
         onClick={handleGenerate}
         disabled={isGenerating}
       >
-        {isGenerating ? 'Generating…' : 'Generate Puzzle'}
+        {isGenerating
+          ? 'Generating…'
+          : sizeMode === 'sheet' ? 'Generate Sheet' : 'Generate Puzzle'}
       </button>
     </div>
   );
