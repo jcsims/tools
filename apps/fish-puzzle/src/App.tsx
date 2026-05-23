@@ -11,14 +11,16 @@ export default function App() {
   const [showSolution, setShowSolution] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerate = useCallback((rows: number, cols: number, fishCount: number, sheet: boolean) => {
+  const handleGenerate = useCallback((rows: number, cols: number, fishCount: number, sheet: boolean, seed?: number) => {
     setIsGenerating(true);
     setShowSolution(false);
 
     // Defer to next tick so the disabled state renders first
     setTimeout(() => {
       const count = sheet ? 4 : 1;
-      const generated = Array.from({ length: count }, () => generatePuzzle(rows, cols, fishCount));
+      const generated = Array.from({ length: count }, (_, i) =>
+        generatePuzzle(rows, cols, fishCount, seed !== undefined ? seed + i : undefined)
+      );
       setPuzzles(generated);
       setIsSheet(sheet);
       setIsGenerating(false);
@@ -54,6 +56,7 @@ export default function App() {
                   <span>{first.rows}×{first.cols} grid</span>
                   <span>{first.fishCount} fish</span>
                   <span>{first.grid.flat().filter(c => c.type === 'clue').length} clues</span>
+                  <span>Seed: {first.seed}</span>
                 </>
               )}
             </div>
@@ -67,7 +70,7 @@ export default function App() {
                 <h2>Fish Puzzle{isSheet ? 's' : ''}</h2>
                 <p>
                   {first.rows}×{first.cols} &mdash; {first.fishCount} fish to find
-                  {isSheet ? ' (each)' : ''}
+                  {isSheet ? ' (each)' : ` — Seed: ${first.seed}`}
                 </p>
               </div>
 
@@ -75,7 +78,7 @@ export default function App() {
                 <div className="puzzle-sheet">
                   {puzzles.map((p, i) => (
                     <div key={i} className="sheet-item">
-                      <div className="sheet-item-label">Puzzle {i + 1}</div>
+                      <div className="sheet-item-label">Puzzle {i + 1} — Seed: {p.seed}</div>
                       <PuzzleGrid puzzle={p} showSolution={showSolution} />
                     </div>
                   ))}

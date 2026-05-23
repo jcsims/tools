@@ -1,10 +1,21 @@
 import type { Puzzle, Cell } from './types.ts';
 import { countSolutions } from './solver.ts';
 
-function shuffle<T>(arr: T[]): T[] {
+// Mulberry32 seeded PRNG — returns a function that produces floats in [0, 1).
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffle<T>(arr: T[], rand: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -28,7 +39,10 @@ function computeAdjacency(r: number, c: number, fishSet: Set<string>, rows: numb
   return getNeighborKeys(r, c, rows, cols).filter(k => fishSet.has(k)).length;
 }
 
-export function generatePuzzle(rows: number, cols: number, fishCount: number): Puzzle {
+export function generatePuzzle(rows: number, cols: number, fishCount: number, seed?: number): Puzzle {
+  const actualSeed = seed !== undefined ? (seed >>> 0) : Math.floor(Math.random() * 4294967296);
+  const rand = mulberry32(actualSeed);
+
   const totalCells = rows * cols;
   const clampedFish = Math.max(1, Math.min(fishCount, totalCells - 1));
 
@@ -38,7 +52,7 @@ export function generatePuzzle(rows: number, cols: number, fishCount: number): P
     for (let c = 0; c < cols; c++) allKeys.push(`${r},${c}`);
   }
 
-  const fishSet = new Set(shuffle(allKeys).slice(0, clampedFish));
+  const fishSet = new Set(shuffle(allKeys, rand).slice(0, clampedFish));
 
   // Build full clue set: all non-fish cells
   const clues = new Map<string, number>();
@@ -53,7 +67,7 @@ export function generatePuzzle(rows: number, cols: number, fishCount: number): P
 
   // Greedy clue reduction: remove clues while puzzle stays uniquely solvable.
   // Try removing low-value clues first (they constrain less).
-  const clueList = shuffle([...clues.entries()]).sort((a, b) => a[1] - b[1]);
+  const clueList = shuffle([...clues.entries()], rand).sort((a, b) => a[1] - b[1]);
 
   for (const [key, value] of clueList) {
     clues.delete(key);
@@ -73,7 +87,7 @@ export function generatePuzzle(rows: number, cols: number, fishCount: number): P
     }),
   );
 
-  return { rows, cols, grid, fishCount: clampedFish };
+  return { rows, cols, grid, fishCount: clampedFish, seed: actualSeed };
 }
 
 type Grid = Cell[][];
