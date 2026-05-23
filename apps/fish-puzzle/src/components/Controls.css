@@ -114,6 +114,25 @@
   text-align: center;
 }
 
+.seed-optional {
+  font-weight: 400;
+  color: #888;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.seed-input {
+  width: 160px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.seed-input::placeholder {
+  color: #aaa;
+}
+
 .generate-btn {
   padding: 10px 24px;
   background: #2c7be5;

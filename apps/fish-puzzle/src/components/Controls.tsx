@@ -3,7 +3,7 @@ import { PRESET_SIZES } from '../types.ts';
 import './Controls.css';
 
 interface Props {
-  onGenerate: (rows: number, cols: number, fishCount: number, sheet: boolean) => void;
+  onGenerate: (rows: number, cols: number, fishCount: number, sheet: boolean, seed?: number) => void;
   isGenerating: boolean;
 }
 
@@ -19,6 +19,7 @@ export function Controls({ onGenerate, isGenerating }: Props) {
   const [customRows, setCustomRows] = useState(8);
   const [customCols, setCustomCols] = useState(8);
   const [fishCount, setFishCount] = useState(PRESET_SIZES[1].defaultFish);
+  const [seedInput, setSeedInput] = useState('');
 
   const currentRows =
     sizeMode === 'sheet' ? SHEET_ROWS
@@ -55,7 +56,10 @@ export function Controls({ onGenerate, isGenerating }: Props) {
 
   function handleGenerate() {
     const clampedFish = Math.max(1, Math.min(fishCount, maxFish));
-    onGenerate(currentRows, currentCols, clampedFish, sizeMode === 'sheet');
+    const trimmed = seedInput.trim();
+    const parsed = trimmed ? parseInt(trimmed, 10) : NaN;
+    const seed = !isNaN(parsed) ? parsed : undefined;
+    onGenerate(currentRows, currentCols, clampedFish, sizeMode === 'sheet', seed);
   }
 
   return (
@@ -144,6 +148,20 @@ export function Controls({ onGenerate, isGenerating }: Props) {
             onChange={e => setFishCount(Math.max(1, Math.min(parseInt(e.target.value) || 1, maxFish)))}
           />
         </div>
+      </div>
+
+      <div className="control-group">
+        <label className="control-label" htmlFor="seed-input">
+          Seed <span className="seed-optional">(optional)</span>
+        </label>
+        <input
+          id="seed-input"
+          type="number"
+          className="seed-input"
+          placeholder="random"
+          value={seedInput}
+          onChange={e => setSeedInput(e.target.value)}
+        />
       </div>
 
       <button

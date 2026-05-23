@@ -12,6 +12,7 @@ export interface Puzzle {
   cols: number;
   grid: Grid;
   fishCount: number;
+  seed: number;
 }
 
 export interface GridSize {
