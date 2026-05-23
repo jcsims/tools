@@ -7,15 +7,16 @@
 .puzzle-grid {
   border-collapse: collapse;
   border: 2px solid #333;
+  --cell-size: min(80px, calc(560px / var(--cols)));
 }
 
 .puzzle-cell {
-  width: 44px;
-  height: 44px;
+  width: var(--cell-size);
+  height: var(--cell-size);
   border: 1px solid #999;
   text-align: center;
   vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: calc(var(--cell-size) * 0.4);
   font-weight: 600;
   color: #1a1a1a;
   background: #fff;
@@ -37,19 +38,17 @@
 
 .cell-fish-revealed {
   background: #e8f5e9;
-  font-size: 1.4rem;
+  font-size: calc(var(--cell-size) * 0.5);
 }
 
 @media print {
   .puzzle-grid {
     border: 2px solid #000;
+    --cell-size: min(90px, calc(540px / var(--cols)));
   }
 
   .puzzle-cell {
-    width: 36px;
-    height: 36px;
     border: 1px solid #666;
-    font-size: 1rem;
     color: #000;
   }
 
@@ -63,6 +62,5 @@
 
   .cell-fish-revealed {
     background: #ccc;
-    font-size: 1.2rem;
   }
 }

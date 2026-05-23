@@ -68,6 +68,11 @@
   justify-content: center;
 }
 
+/* Sheet puzzles stay fixed-size so the 2×2 layout fits the page */
+.puzzle-sheet .puzzle-grid {
+  --cell-size: 44px;
+}
+
 .sheet-item {
   display: flex;
   flex-direction: column;
@@ -209,13 +214,7 @@
   }
 
   /* Larger cells in sheet mode to use the page well */
-  .puzzle-sheet .puzzle-cell {
-    width: 56px;
-    height: 56px;
-    font-size: 1.25rem;
-  }
-
-  .puzzle-sheet .cell-fish-revealed {
-    font-size: 1.5rem;
+  .puzzle-sheet .puzzle-grid {
+    --cell-size: 56px;
   }
 }
